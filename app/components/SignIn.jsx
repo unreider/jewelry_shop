@@ -1,45 +1,24 @@
-'use client';
+"use client";
 
-import Link from "next/link"
-
-import { useState, useEffect } from "react";
+// import Link from "next/link";
+// import { useSession } from "next-auth/client"
 
 export default function SignIn() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [errors, setErrors] = useState({});
-  const [isFormValid, setIsFormValid] = useState(false);
 
-  useEffect(() => {
-    validateForm(email, password);
-  }, [email, password]);
+  // const [session, loading] = useSession()
 
-  const validateForm = async (email, password) => {
-    let errors = {};
-
-    if (!email) {
-      errors.email = "Email is Required.";
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      errors.email = "Email is Invalid.";
-    }
-
-    if (!password) {
-      errors.password = "Password is Required.";
-    } else if (password.length < 6) {
-      errors.password = "Password must be at least 6 characters.";
-    }
-
-    setErrors(errors);
-    setIsFormValid(Object.keys(errors).length === 0);
-  };
-
-  const handleSubmit = async (e) => {
-
-  }
+  // if (session) {
+  //   return <p>Signed in as {session.user.email}</p>
+  // }
+  
 
   return (
     <div className="mt-8 ml-8">
-      <form onSubmit={handleSubmit}>
+
+
+
+      {/* <form onSubmit={handleSubmit}>
+        <input name="csrfToken" type="hidden" defaultValue={csrfToken} />
         <div className="block">
           <label htmlFor="email" className="pr-2 block">
             Email
@@ -52,6 +31,7 @@ export default function SignIn() {
             className="rounded-md border border-[#e0e0e0] bg-white pl-2 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
             onChange={(e) => setEmail(e.target.value)}
           />
+
           {errors.email && <p>{errors.email}</p>}
         </div>
 
@@ -79,7 +59,9 @@ export default function SignIn() {
         >
           Don't have an account?
         </Link>
-      </form>
+      </form> */}
+
+      {/* <h1 className="text-white-500">{session?.user}</h1> */}
     </div>
-  )
+  );
 }

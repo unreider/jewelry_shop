@@ -1,7 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 
+// import { useSession } from "next-auth/react";
+
 export default function Home() {
+
+  
+
   return (
     <div className="w-full text-center">
       <div className="relative mt-8">
@@ -23,6 +28,8 @@ export default function Home() {
         <div className="block">
           <Link href="/sign-up">Sign Up</Link>
         </div>
+
+        {/* <h1 className="text-white-500">{session?.user.email}</h1> */}
       </div>
     </div>
   );

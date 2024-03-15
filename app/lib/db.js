@@ -21,4 +21,4 @@ export async function insertUser(data) {
   const user = await sql`INSERT INTO users (email, password)
     VALUES (${data.email}, ${data.password})`;
   return user;
-} 
+}
