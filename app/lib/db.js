@@ -22,3 +22,9 @@ export async function insertUser(data) {
     VALUES (${data.email}, ${data.password})`;
   return user;
 }
+
+export async function getUser(data) {
+  const email = data.email;
+  const user = await sql`SELECT * FROM users WHERE email = ${email}`;
+  return user;
+}

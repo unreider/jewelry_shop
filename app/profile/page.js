@@ -1,12 +1,11 @@
-
 import Profile from "../components/Profile";
-
+import Header from "../components/Header";
 
 export default async function ProfilePage() {
-
-
-
   return (
-    <Profile />
+    <div>
+      <Header />
+      <Profile />
+    </div>
   );
 }

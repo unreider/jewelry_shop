@@ -1,9 +1,11 @@
 import SignUp from "../components/SignUp";
-import {signUp} from "../lib/db";
+import Header from "../components/Header";
 
 export default async function SignUpPage() {
-
   return (
-    <SignUp />
+    <div>
+      <Header />
+      <SignUp />
+    </div>
   );
 }
