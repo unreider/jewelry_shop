@@ -3,12 +3,14 @@
 import Socials from "./Socials";
 import { useState, useEffect } from "react";
 import { signIn } from "next-auth/react";
+import { useRouter } from 'next/navigation';
 
 export default function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
   const [isFormValid, setIsFormValid] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     validateForm(email, password);
@@ -38,12 +40,12 @@ export default function SignIn() {
     console.log("e", e);
     if (isFormValid) {
       console.log("Form submitted successfully!");
-      const res = signIn("credentials", {
+      await signIn("credentials", {
         email: email,
         password: password,
         redirect: false,
       });
-      console.log("res", res);
+      router.push('/');
     } else {
       console.log("Form has errors. Please correct them.");
     }

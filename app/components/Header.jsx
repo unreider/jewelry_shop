@@ -2,6 +2,7 @@
 
 import { Fragment, useState, useEffect } from "react";
 import { getSession, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { Dialog, Popover, Tab, Transition } from "@headlessui/react";
 import {
   Bars3Icon,
@@ -9,6 +10,7 @@ import {
   ShoppingBagIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
+import Link from "next/link";
 
 const navigation = {
   categories: [
@@ -147,26 +149,25 @@ function classNames(...classes) {
 export default function Header() {
   const [open, setOpen] = useState(false);
 
-  const [session, setSession] = useState(null);
-
-  // const [isSignedIn, setIsSignedIn] = useState(true);
+  const [userSession, setUserSession] = useState(null);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {
       const session = await getSession();
       if (session) {
-        setSession(session);
+        setUserSession(session);
       }
     };
     fetchData();
   }, []);
 
-  const handleSignOut = () => {
-    signOut({
-      redirect: true,
-      callbackUrl: "/sign-in",
+  const handleSignOut = async () => {
+    await signOut({
+      redirect: false,
     });
-  }
+    router.push("sign-in");
+  };
 
   return (
     <div className="bg-white">
@@ -365,14 +366,14 @@ export default function Header() {
 
               {/* Logo */}
               <div className="ml-4 flex lg:ml-0">
-                <a href="/">
+                <Link href="/">
                   <span className="sr-only">Your Company</span>
                   <img
                     className="h-8 w-auto"
                     src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
                     alt=""
                   />
-                </a>
+                </Link>
               </div>
 
               {/* Flyout menus */}
@@ -411,39 +412,45 @@ export default function Header() {
 
               <div className="ml-auto flex items-center">
                 <div className="hidden lg:flex lg:flex-1 lg:items-center lg:justify-end lg:space-x-6">
-                  {session ? (
-                    <a
-                      href="/profile"
-                      className="text-sm font-medium text-gray-700 hover:text-gray-800"
-                    >
-                      {session.user.name}
-                    </a>
+                  {userSession ? (
+                    <>
+                      <Link
+                        href="/profile"
+                        className="text-sm font-medium text-gray-700 hover:text-gray-800"
+                      >
+                        {/* !better be session.user.name */}
+                        {userSession.user.email}
+                      </Link>
+                      <span
+                        className="h-6 w-px bg-gray-200"
+                        aria-hidden="true"
+                      />
+                      <button
+                        // href="/sign-in"
+                        className="text-sm font-medium text-gray-700 hover:text-gray-800"
+                        onClick={handleSignOut}
+                      >
+                        Sign Out
+                      </button>
+                      
+                    </>
                   ) : (
-                    <div className="text-sm font-medium text-gray-400">
-                      Loading...
-                    </div>
+                    <>
+                      <Link
+                        href="/sign-in"
+                        className="text-sm font-medium text-gray-700 hover:text-gray-800"
+                      >
+                        Sign In
+                      </Link>
+                      
+                      <Link
+                        href="sign-up"
+                        className="text-sm font-medium text-gray-700 hover:text-gray-800"
+                      >
+                        Sign Up
+                      </Link>
+                    </>
                   )}
-
-                  <button
-                    // href="/sign-in"
-                    className="text-sm font-medium text-gray-700 hover:text-gray-800"
-                    onClick={handleSignOut}
-                  >
-                    Sign Out
-                  </button>
-                  <a
-                    href="/sign-in"
-                    className="text-sm font-medium text-gray-700 hover:text-gray-800"
-                  >
-                    Sign In
-                  </a>
-                  <span className="h-6 w-px bg-gray-200" aria-hidden="true" />
-                  <a
-                    href="sign-up"
-                    className="text-sm font-medium text-gray-700 hover:text-gray-800"
-                  >
-                    Sign Up
-                  </a>
                 </div>
 
                 <div className="hidden lg:ml-8 lg:flex">
