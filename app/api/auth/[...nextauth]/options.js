@@ -22,10 +22,6 @@ export const options = {
       clientSecret: process.env.TWITTER_CLIENT_SECRET,
     }),
     CredentialsProvider({
-      credentials: {
-        email: { label: "Email", type: "email", placeholder: "jsmith" },
-        password: { label: "Password", type: "password" },
-      },
       async authorize(credentials, req) {
         const email = credentials.email;
         const password = credentials.password;
