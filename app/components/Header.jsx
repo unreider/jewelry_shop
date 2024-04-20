@@ -137,7 +137,7 @@ const navigation = {
     },
   ],
   pages: [
-    { name: "Company", href: "#" },
+    { name: "About", href: "/about" },
     { name: "Stores", href: "#" },
   ],
 };
@@ -368,11 +368,12 @@ export default function Header() {
               <div className="ml-4 flex lg:ml-0">
                 <Link href="/">
                   <span className="sr-only">Your Company</span>
-                  <img
+                  {/* <img
                     className="h-8 w-auto"
                     src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
                     alt=""
-                  />
+                  /> */}
+                  <Link href="/">Jewelry By Artur</Link>
                 </Link>
               </div>
 
@@ -399,13 +400,13 @@ export default function Header() {
                   ))}
 
                   {navigation.pages.map((page) => (
-                    <a
+                    <Link
                       key={page.name}
                       href={page.href}
                       className="flex items-center text-sm font-medium text-gray-700 hover:text-gray-800"
                     >
                       {page.name}
-                    </a>
+                    </Link>
                   ))}
                 </div>
               </Popover.Group>
@@ -418,8 +419,7 @@ export default function Header() {
                         href="/profile"
                         className="text-sm font-medium text-gray-700 hover:text-gray-800"
                       >
-                        {/* !better be session.user.name */}
-                        {userSession.user.email}
+                        {userSession.user.name}
                       </Link>
                       <span
                         className="h-6 w-px bg-gray-200"
@@ -432,7 +432,6 @@ export default function Header() {
                       >
                         Sign Out
                       </button>
-                      
                     </>
                   ) : (
                     <>
@@ -442,7 +441,7 @@ export default function Header() {
                       >
                         Sign In
                       </Link>
-                      
+
                       <Link
                         href="sign-up"
                         className="text-sm font-medium text-gray-700 hover:text-gray-800"

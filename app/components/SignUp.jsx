@@ -1,11 +1,13 @@
 "use client";
 
-import Link from "next/link"
+import Link from "next/link";
 import { useState, useEffect } from "react";
 import { signUp } from "../lib/actions";
 import Socials from "./Socials";
+import { checkParamExists } from "../lib/db";
 
 export default function SignUp() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [repassword, setRePassword] = useState("");
@@ -13,11 +15,15 @@ export default function SignUp() {
   const [isFormValid, setIsFormValid] = useState(false);
 
   useEffect(() => {
-    validateForm(email, password, repassword);
-  }, [email, password, repassword]);
+    validateForm(name, email, password, repassword);
+  }, [name, email, password, repassword]);
 
-  const validateForm = async (email, password, repassword) => {
+  const validateForm = async (name, email, password, repassword) => {
     let errors = {};
+
+    if (!name) {
+      errors.name = "Name is Required.";
+    }
 
     if (!email) {
       errors.email = "Email is Required.";
@@ -41,6 +47,10 @@ export default function SignUp() {
       errors.match = "Passwords don't match!";
     }
 
+    // !! Probably not gonna work because it will make
+    // a query for every character typed
+    
+
     setErrors(errors);
     setIsFormValid(Object.keys(errors).length === 0);
   };
@@ -48,16 +58,36 @@ export default function SignUp() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    let errors = {};
+
+    const nameExists = checkParamExists("name", name);
+    const emailExists = checkParamExists("email", email);
+
+    let nameExistsResult, emailExistsResult;
+
+    Promise.all([nameExists, emailExists])
+      .then(([nameResult, emailResult]) => {
+        nameExistsResult = nameResult;
+        emailExistsResult = emailResult;
+      })
+      .catch((error) => {
+        console.error(error);
+      })
+
+    if (nameExistsResult) errors.nameExists = "Name already exists!";
+    if (emailExistsResult) errors.emailExists = "Email already exists!";
+
+    setErrors(prevErrors => ({...prevErrors, ...errors}));
+
     if (isFormValid) {
-      console.log('Form submitted successfully!'); 
-      signUp({ email: email, password: password });
+      console.log("Form submitted successfully!");
+      signUp({ name: name, email: email, password: password });
     } else {
-      console.log('Form has errors. Please correct them.'); 
+      console.log("Form has errors. Please correct them.");
     }
   };
 
   return (
-
     <>
       <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8 bg-white">
         <div className="sm:mx-auto sm:w-full sm:max-w-sm">
@@ -73,6 +103,32 @@ export default function SignUp() {
 
         <div className="mt-7 sm:mx-auto sm:w-full sm:max-w-sm">
           <form className="space-y-6" onSubmit={handleSubmit}>
+            <div>
+              <label
+                htmlFor="name"
+                className="block text-sm font-medium leading-6 text-gray-900"
+              >
+                Name
+              </label>
+              <div className="mt-1">
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  autoComplete="name"
+                  required
+                  className="block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </div>
+              {errors.name && (
+                <p className="mt-1 text-sm text-gray-900">{errors.name}</p>
+              )}
+              {errors.nameExists && (
+                <p className="mt-1 text-sm text-gray-900">{errors.nameExists}</p>
+              )}
+            </div>
+
             <div>
               <label
                 htmlFor="email"
@@ -91,7 +147,12 @@ export default function SignUp() {
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
-              {errors.email && <p className="mt-1 text-sm text-gray-900">{errors.email}</p>}
+              {errors.email && (
+                <p className="mt-1 text-sm text-gray-900">{errors.email}</p>
+              )}
+              {errors.emailExists && (
+                <p className="mt-1 text-sm text-gray-900">{errors.emailExists}</p>
+              )}
             </div>
 
             <div>
@@ -114,7 +175,9 @@ export default function SignUp() {
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
-              {errors.password && <p className="mt-1 text-sm text-gray-900">{errors.password}</p>}
+              {errors.password && (
+                <p className="mt-1 text-sm text-gray-900">{errors.password}</p>
+              )}
             </div>
 
             <div>
@@ -137,7 +200,16 @@ export default function SignUp() {
                   onChange={(e) => setRePassword(e.target.value)}
                 />
               </div>
-              {errors.repassword && <p className="mt-1 text-sm text-gray-900">{errors.repassword}</p>}
+              {errors.repassword && (
+                <p className="mt-1 text-sm text-gray-900">
+                  {errors.repassword}
+                </p>
+              )}
+              {errors.match && (
+                <p className="mt-1 text-sm text-gray-900">
+                  {errors.match}
+                </p>
+              )}
             </div>
 
             <div>
@@ -161,14 +233,9 @@ export default function SignUp() {
               Sign In
             </a>
           </p>
-
-          
         </div>
       </div>
     </>
-
-
-
 
     // <div className="mt-8 ml-8">
     //   <form onSubmit={handleSubmit}>

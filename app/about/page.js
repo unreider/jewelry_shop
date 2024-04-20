@@ -1,7 +1,11 @@
 import About from "../components/About";
+import Header from "../components/Header";
 
 export default function AboutPage() {
   return (
-    <About />
+    <>
+      <Header />
+      <About />
+    </>
   );
 }
