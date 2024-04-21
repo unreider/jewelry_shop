@@ -20,12 +20,16 @@ export default function AdminCard({ action, title, categories, products }) {
 
   const [productNameToAdd, setProductNameToAdd] = useState("");
   const [productDescToAdd, setProductDescToAdd] = useState("");
+  const [productPriceToAdd, setProductPriceToAdd] = useState("");
+  const [productImageToAdd, setProductImageToAdd] = useState({});
   const [productCategoryToAddSelected, setProductCategoryToAddSelected] =
     useState("");
   const [productToDeleteSelected, setProductToDeleteSelected] = useState("");
   const [productToChange, setProductToChange] = useState("");
   const [productNameToChange, setProductNameToChange] = useState("");
   const [productDescToChange, setProductDescToChange] = useState("");
+  const [productPriceToChange, setProductPriceToChange] = useState("");
+  // const [productImageToChange, setProductImageToChange] = useState("");
   const [productCategoryToChangeSelected, setProductCategoryToChangeSelected] =
     useState("");
 
@@ -53,10 +57,15 @@ export default function AdminCard({ action, title, categories, products }) {
           insertProduct({
             name: productNameToAdd,
             desc: productDescToAdd,
+            price: productPriceToAdd,
+            // image: `/uploads/${productImageToAdd.name}`,
+            image: {file: productImageToAdd.file, fileData: productImageToAdd.fileData},
             category_name: productCategoryToAddSelected,
           });
           setProductNameToAdd("");
           setProductDescToAdd("");
+          setProductPriceToAdd("");
+          setProductImageToAdd({});
           setProductCategoryToAddSelected("");
         }
         break;
@@ -75,7 +84,7 @@ export default function AdminCard({ action, title, categories, products }) {
           const currentProductIndex = products.indexOf(productToChange);
           products.splice(currentProductIndex, 1);
 
-          console.log('productToDeleteSelected', productToDeleteSelected);
+          console.log("productToDeleteSelected", productToDeleteSelected);
           deleteProduct(productToDeleteSelected);
           setProductToDeleteSelected("");
         }
@@ -99,15 +108,39 @@ export default function AdminCard({ action, title, categories, products }) {
           changeProduct({
             name: { oldName: productToChange, newName: productNameToChange },
             desc: productDescToChange,
+            price: productPriceToChange,
+            // image: productImageToChange,
             category_name: productCategoryToChangeSelected,
           });
           setProductToChange("");
           setProductNameToChange("");
           setProductDescToChange("");
+          setProductPriceToChange("");
+          // setProductImageToChange("");
           setProductCategoryToChangeSelected("");
         }
       default:
         break;
+    }
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    console.log('File', file);
+    const parsedFile = {
+      name: file.name,
+      size: file.size,
+      type: file.type
+    }
+    if (file) {
+      const reader = new FileReader(); // Create a FileReader object
+      reader.onload = function(event) {
+        // The file data is available in event.target.result
+        const fileData = event.target.result;
+        console.log('File data:', fileData);
+        setProductImageToAdd({file: parsedFile, fileData: fileData});
+      };
+      reader.readAsDataURL(file); // Read the file as a data URL
     }
   };
 
@@ -165,6 +198,15 @@ export default function AdminCard({ action, title, categories, products }) {
                   className="border border-black rounded p-2 mt-6"
                   onChange={(e) => setProductDescToAdd(e.target.value)}
                 />
+                <input
+                  type="number"
+                  value={productPriceToAdd}
+                  placeholder={`Type a ${title} price`}
+                  className="border border-black rounded p-2 mt-2"
+                  onChange={(e) => setProductPriceToAdd(e.target.value)}
+                />
+                <input type="file" accept="image/*" onChange={handleImageChange} />
+                {/* <Image src={productImageToAdd} alt={product.name} width={300} height={200} /> */}
                 <select
                   name={title}
                   className="mt-3"

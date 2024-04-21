@@ -11,14 +11,14 @@ export default function Admin() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const categories = await getCategories();
-        setCategories(categories);
-        const products = await getProducts();
-        console.log("products", products);
-        setProducts(products);
+        const fetchedCategories = await getCategories();
+        setCategories(fetchedCategories);
+        const fetchedProducts = await getProducts();
+        const parsedProducts = fetchedProducts.map((row) => row.name);
+        setProducts(parsedProducts);
         // console.log(categories); // Output: Array of categories
       } catch (error) {
-        console.error("Error fetching categories:", error);
+        console.error("Error fetching Admin data:", error);
       }
     }
 
@@ -34,9 +34,9 @@ export default function Admin() {
         Categories
       </div>
       <div className="w-full h-full p-9 mt-2 grid grid-cols-3 gap-x-6 gap-y-10">
+        <AdminCard action="add" title="Category" categories={categories} />
         {categories.length > 0 ? (
           <>
-            <AdminCard action="add" title="Category" categories={categories} />
             <AdminCard
               action="delete"
               title="Category"
@@ -57,15 +57,14 @@ export default function Admin() {
         Products
       </div>
       <div className="w-full h-full p-9 mt-2 grid grid-cols-3 gap-x-6 gap-y-10">
-        {/* need to change to products.length! */}
+        <AdminCard
+          action="add"
+          title="Product"
+          categories={categories}
+          products={products}
+        />
         {products.length > 0 ? (
           <>
-            <AdminCard
-              action="add"
-              title="Product"
-              categories={categories}
-              products={products}
-            />
             <AdminCard
               action="delete"
               title="Product"
