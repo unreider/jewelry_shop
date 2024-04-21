@@ -14,6 +14,7 @@ export default function Admin() {
         const categories = await getCategories();
         setCategories(categories);
         const products = await getProducts();
+        console.log("products", products);
         setProducts(products);
         // console.log(categories); // Output: Array of categories
       } catch (error) {
@@ -33,9 +34,9 @@ export default function Admin() {
         Categories
       </div>
       <div className="w-full h-full p-9 mt-2 grid grid-cols-3 gap-x-6 gap-y-10">
-        <AdminCard action="add" title="Category" />
         {categories.length > 0 ? (
           <>
+            <AdminCard action="add" title="Category" categories={categories} />
             <AdminCard
               action="delete"
               title="Category"
@@ -56,10 +57,15 @@ export default function Admin() {
         Products
       </div>
       <div className="w-full h-full p-9 mt-2 grid grid-cols-3 gap-x-6 gap-y-10">
-        <AdminCard action="add" title="Product" categories={categories} />
         {/* need to change to products.length! */}
-        {categories.length > 0 ? (
+        {products.length > 0 ? (
           <>
+            <AdminCard
+              action="add"
+              title="Product"
+              categories={categories}
+              products={products}
+            />
             <AdminCard
               action="delete"
               title="Product"

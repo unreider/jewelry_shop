@@ -84,6 +84,7 @@ export async function getCategories() {
 
 async function getProductCategoryId(name) {
   const category_id = await sql`SELECT (id) FROM categories WHERE name = ${name}`;
+  console.log('category_id.rows[0]', category_id.rows[0]);
   return category_id.rows[0].id;
 }
 
@@ -98,21 +99,24 @@ export async function deleteProduct(name) {
   await sql`DELETE FROM products WHERE name = ${name};`
 }
 
-export async function changeProduct({name, desc, category_id}) {
+export async function changeProduct(data) {
+  const oldName = data.name.oldName;
+  const newName = data.name.newName;
+  const desc = data.desc;
+  // console.log("data.category_name", data.category_name);
+  const category_id = await getProductCategoryId(data.category_name);
+  const product = await getProduct(oldName);
+  const productId = product.id;
   try {
 
     const product = await sql`
       UPDATE products
-      SET (
-        name = ${name.newName},
-        description = ${desc.newDesc},
-        category_id = ${category_id.newCategoryId}
-      )
-      WHERE (
-        name = ${name.oldName},
-        description = ${desc.oldDesc},
-        category_id = ${category_id.oldCategoryId}
-      )
+      SET
+        name = ${newName},
+        description = ${desc},
+        category_id = ${category_id}
+      WHERE
+        id = ${productId}
     `;
     return product;
   } catch (error) {
@@ -144,7 +148,12 @@ export async function getUser(data) {
 
 export async function getProduct(name) {
   const product = await sql`SELECT * FROM products WHERE name = ${name}`;
-  return product;
+  return product.rows[0];
+}
+
+export async function getProductCategoryIdByName(id) {
+  const productCategory = await sql`SELECT (name) FROM categories WHERE id = ${id}`;
+  return productCategory.rows[0].name;
 }
 
 // check if name or email already exists in the database

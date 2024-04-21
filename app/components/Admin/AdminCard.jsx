@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   insertCategory,
   deleteCategory,
@@ -8,7 +8,8 @@ import {
   insertProduct,
   deleteProduct,
   changeProduct,
-  getProductCategoryId
+  getProduct,
+  getProductCategoryIdByName,
 } from "@/app/lib/db";
 
 export default function AdminCard({ action, title, categories, products }) {
@@ -19,7 +20,8 @@ export default function AdminCard({ action, title, categories, products }) {
 
   const [productNameToAdd, setProductNameToAdd] = useState("");
   const [productDescToAdd, setProductDescToAdd] = useState("");
-  const [productCategoryToAddSelected, setProductCategoryToAddSelected] = useState("");
+  const [productCategoryToAddSelected, setProductCategoryToAddSelected] =
+    useState("");
   const [productToDeleteSelected, setProductToDeleteSelected] = useState("");
   const [productToChange, setProductToChange] = useState("");
   const [productNameToChange, setProductNameToChange] = useState("");
@@ -27,16 +29,32 @@ export default function AdminCard({ action, title, categories, products }) {
   const [productCategoryToChangeSelected, setProductCategoryToChangeSelected] =
     useState("");
 
+  // const [newCategories, setNewCategories] = useState(categories);
+  // const [newProducts, setNewProducts] = useState(products);
+
+  // const [deleteRemountKey, setDeleteRemountKey] = useState(0);
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
     switch (action) {
       case "add":
         if (title === "Category") {
+          // Update 'categories'
+          categories.push(categoryToAdd);
+          // setDeleteRemountKey(prevKey => prevKey + 1);
+
           insertCategory(categoryToAdd);
           setCategoryToAdd("");
         } else if (title === "Product") {
-          insertProduct({name: productNameToAdd, desc: productDescToAdd, category_name: productCategoryToAddSelected})
+          // Update 'products'
+          products.push(productNameToAdd);
+
+          insertProduct({
+            name: productNameToAdd,
+            desc: productDescToAdd,
+            category_name: productCategoryToAddSelected,
+          });
           setProductNameToAdd("");
           setProductDescToAdd("");
           setProductCategoryToAddSelected("");
@@ -44,21 +62,45 @@ export default function AdminCard({ action, title, categories, products }) {
         break;
       case "delete":
         if (title === "Category") {
+          // Update 'categories'
+          const currentCategoryIndex = categories.indexOf(
+            categoryToChangeSelected
+          );
+          categories.splice(currentCategoryIndex, 1);
+
           deleteCategory(categoryToDeleteSelected);
           setCategoryToDeleteSelected("");
         } else if (title === "Product") {
+          // Update 'products'
+          const currentProductIndex = products.indexOf(productToChange);
+          products.splice(currentProductIndex, 1);
+
+          console.log('productToDeleteSelected', productToDeleteSelected);
           deleteProduct(productToDeleteSelected);
           setProductToDeleteSelected("");
         }
       case "change":
         if (title === "Category") {
+          // Update 'categories'
+          const currentCategoryIndex = categories.indexOf(
+            categoryToChangeSelected
+          );
+          categories[currentCategoryIndex] = categoryToChange;
+
           changeCategory(categoryToChangeSelected, categoryToChange);
           // Reset input value
           setCategoryToChange("");
           setCategoryToChangeSelected("");
         } else if (title === "Product") {
-          const productCategoryId = getProductCategoryId(productCategoryToChangeSelected);
-          changeProduct({productNameToChange, productDescToChange, productCategoryId});
+          // Update 'products'
+          const currentProductIndex = products.indexOf(productToChange);
+          products[currentProductIndex] = productNameToChange;
+
+          changeProduct({
+            name: { oldName: productToChange, newName: productNameToChange },
+            desc: productDescToChange,
+            category_name: productCategoryToChangeSelected,
+          });
           setProductToChange("");
           setProductNameToChange("");
           setProductDescToChange("");
@@ -67,6 +109,20 @@ export default function AdminCard({ action, title, categories, products }) {
       default:
         break;
     }
+  };
+
+  const handleProductToChange = async (e) => {
+    e.preventDefault();
+    const value = e.target.value;
+    setProductToChange(value);
+
+    const parsedProduct = await getProduct(value);
+    setProductNameToChange(parsedProduct.name);
+    setProductDescToChange(parsedProduct.description);
+    const productCategoryName = await getProductCategoryIdByName(
+      parsedProduct.category_id
+    );
+    setProductCategoryToChangeSelected(productCategoryName);
   };
 
   return (
@@ -113,7 +169,9 @@ export default function AdminCard({ action, title, categories, products }) {
                   name={title}
                   className="mt-3"
                   value={productCategoryToAddSelected}
-                  onChange={(e) => setProductCategoryToAddSelected(e.target.value)}
+                  onChange={(e) =>
+                    setProductCategoryToAddSelected(e.target.value)
+                  }
                 >
                   <option value="">{`Select a ${title} Category`}</option>
                   {categories.map((category) => {
@@ -150,21 +208,31 @@ export default function AdminCard({ action, title, categories, products }) {
                 title === "Category"
                   ? setCategoryToDeleteSelected(e.target.value)
                   : title === "Product"
-                  ? setProductToDeleteSelected
+                  ? setProductToDeleteSelected(e.target.value)
                   : ""
               }
             >
               <option value="">{`Select a ${title} name`}</option>
+
+              {/* ! There is a remount problem when I add, it's not in delete select */}
+              {/* {console.log("newCategories", newCategories)} */}
+
               {title === "Category" ? (
                 categories.map((category) => {
-                  return <option value={category}>{category}</option>;
+                  return (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  );
                 })
               ) : title === "Product" ? (
-                <>
-                  {/* {products.map((product) => {
-                return <option value={product}>{product}</option>;
-              })} */}
-                </>
+                products.map((product) => {
+                  return (
+                    <option key={product} value={product}>
+                      {product}
+                    </option>
+                  );
+                })
               ) : (
                 <></>
               )}
@@ -207,11 +275,15 @@ export default function AdminCard({ action, title, categories, products }) {
                   name={title}
                   className="mt-4"
                   value={productToChange}
-                  onChange={(e) => setProductToChange(e.target.value)}
+                  onChange={handleProductToChange}
                 >
                   <option value="">{`Select a ${title}`}</option>
                   {products.map((product) => {
-                    return <option value={product}>{product}</option>;
+                    return (
+                      <option key={product} value={product}>
+                        {product}
+                      </option>
+                    );
                   })}
                 </select>
                 <input
@@ -222,11 +294,12 @@ export default function AdminCard({ action, title, categories, products }) {
                   onChange={(e) => setProductNameToChange(e.target.value)}
                 />
                 <textarea
+                  value={productDescToChange}
                   placeholder={`Enter new ${title} description...`}
                   rows="4"
                   cols="30"
                   className="border border-black rounded p-2 mt-6"
-                  onChange={(e) => setProductDescToAdd(e.target.value)}
+                  onChange={(e) => setProductDescToChange(e.target.value)}
                 />
                 <select
                   name={title}
