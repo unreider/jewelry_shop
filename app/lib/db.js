@@ -88,28 +88,33 @@ export async function getCategories() {
 }
 
 async function getProductCategoryId(name) {
+  console.log("name", name);
   const category_id =
     await sql`SELECT (id) FROM categories WHERE name = ${name}`;
   return category_id.rows[0].id;
 }
 
 export async function insertProduct(data) {
-  const category_id = await getProductCategoryId(data.category_name);
-  const imageFileName = `${Date.now()}-${data.image.file.name}`;
+  const parsedInt = parseInt(data.price);
+  const category_id = await getProductCategoryId(data.category);
+  const imageFileName = `${Date.now()}-${data.image.file.name.replace(
+    / /g,
+    "-"
+  )}`;
+  // replaces all occurrences of spaces globally (/ /g) with '-'.
+
   const directory = "public/uploads";
-  const imagePathOnServer = path.join(
-    directory,
-    imageFileName
-  );
+  const imagePathOnServer = path.join(directory, imageFileName);
+  const imagePathOnPage = path.join("/uploads", imageFileName);
 
   if (!fs.existsSync(directory)) {
     fs.mkdirSync(directory);
   }
-  
+
   fs.writeFileSync(imagePathOnServer, data.image.fileData);
 
   const product =
-    await sql`INSERT INTO products (name, description, price, image, category_id) VALUES (${data.name}, ${data.desc}, ${data.price}, ${imagePathOnServer}, ${category_id})`;
+    await sql`INSERT INTO products (name, description, price, image, category_id) VALUES (${data.name}, ${data.desc}, ${parsedInt}, ${imagePathOnPage}, ${category_id})`;
   return product;
 }
 
@@ -118,25 +123,28 @@ export async function deleteProduct(name) {
 }
 
 export async function changeProduct(data) {
-  const oldName = data.name.oldName;
-  const newName = data.name.newName;
-  const desc = data.desc;
-  const price = data.price;
-  const image = data.image;
-  // console.log("data.category_name", data.category_name);
-  const category_id = await getProductCategoryId(data.category_name);
-  const product = await getProduct(oldName);
+  const name = data.formData.name;
+  const desc = data.formData.desc;
+  const price = data.formData.price;
+  const imageFileName = `${Date.now()}-${data.formData.image.file.name.replace(
+    / /g,
+    "-"
+  )}`;
+  // replaces all occurrences of spaces globally (/ /g) with '-'.
+  imageFileName.replace(/ /g, "-");
+  const imagePathOnPage = path.join("/uploads", imageFileName);
+  const category_id = await getProductCategoryId(data.formData.category);
+  const product = await getProduct(data.oldName);
   const productId = product.id;
 
   try {
-    //
     const product = await sql`
       UPDATE products
       SET
-        name = ${newName},
+        name = ${name},
         description = ${desc},
         price = ${price},
-        image = ${image},
+        image = ${imagePathOnPage},
         category_id = ${category_id}
       WHERE
         id = ${productId}
@@ -150,7 +158,9 @@ export async function changeProduct(data) {
 
 export async function getProducts() {
   const products = await sql`SELECT * FROM products`;
-  return products.rows;
+  // to get only names in an array
+  const parsedProducts = products.rows.map((row) => row.name);
+  return parsedProducts;
 }
 
 export async function insertUser(data) {
@@ -159,12 +169,48 @@ export async function insertUser(data) {
   return user;
 }
 
+export async function deleteUser(name) {
+  await sql`DELETE FROM users WHERE name = ${name};`;
+}
+
+export async function changeUser(data) {
+  const userId = await getUserIdByName(data.userSelected);
+
+  try {
+    const user = await sql`
+      UPDATE users
+      SET
+        name = ${data.formData.name},
+        email = ${data.formData.email},
+        password = ${data.formData.password}
+      WHERE
+        id = ${userId}
+    `;
+    return user;
+  } catch (error) {
+    console.error("Error updating product:", error);
+    throw error; // Rethrow the error to be handled by the caller
+  }
+}
+
+export async function getUsers() {
+  const users = await sql`SELECT (name) FROM users`;
+  // to get only names in an array
+  const parsedUsers = users.rows.map((row) => row.name);
+  return parsedUsers;
+}
+
 // export async function insertUserProducts(data) {}
 
-export async function getUser(data) {
-  const email = data.email;
+export async function getUser(email) {
   const user = await sql`SELECT * FROM users WHERE email = ${email}`;
   return user;
+}
+
+export async function getUserIdByName(name) {
+  const user = await sql`SELECT id FROM users WHERE name = ${name}`;
+  if (user.rows.length > 0) return user.rows[0].id;
+  return null
 }
 
 export async function getProduct(name) {
@@ -181,7 +227,7 @@ export async function getProductCategoryIdByName(id) {
 // check if name or email already exists in the database
 export async function checkParamExists(param, userText) {
   const query = await sql`SELECT * FROM users WHERE ${param} = ${userText}`;
-  console.log("query.rows", query.rows);
+  // console.log("query.rows", query.rows);
   if (query.rows.length > 0) return true;
   else return false;
 }
