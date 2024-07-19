@@ -1,15 +1,21 @@
-'use client'
+"use client";
 
 import Link from "next/link";
 import Image from "next/image";
 
-import { getUserIdByName, insertUserProduct, checkUserProductExists } from "@/app/lib/db";
+import {
+  getUserIdByName,
+  insertUserProduct,
+  checkUserProductExists,
+} from "@/app/lib/db";
 
 import { getSession } from "next-auth/react";
 import { useState, useEffect } from "react";
+import { useUserProducts } from "@/app/context/UserProductsProvider";
 
 export default function ProductCard({ product }) {
   const [session, setSession] = useState(null);
+  const { userProducts, setUserProducts } = useUserProducts();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -23,14 +29,17 @@ export default function ProductCard({ product }) {
 
   const handleClick = async () => {
     if (session) {
-      const userId = await getUserIdByName(session.user.name)
-      const check = await checkUserProductExists(userId, product.id)
-      if (!check)
-        await insertUserProduct(userId, product.id)
-      else
-        alert('The Product is already in the Cart')
+      const userId = await getUserIdByName(session.user.name);
+      const check = await checkUserProductExists(userId, product.id);
+      if (!check) {
+        await insertUserProduct(userId, product.id);
+        setUserProducts([
+          ...userProducts,
+          { user_id: userId, product_id: product.id },
+        ]);
+      } else alert("The Product is already in the Cart");
     }
-  }
+  };
 
   return (
     <div key={product.id} className="group relative px-7">

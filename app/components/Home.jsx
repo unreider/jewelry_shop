@@ -19,7 +19,7 @@ import {
   FunnelIcon,
   Squares2X2Icon,
 } from "@heroicons/react/20/solid";
-import { useProducts } from "./Context/ProductsContext";
+import { useProducts } from "../context/ProductsProvider";
 
 const sortOptions = [
   { name: "Most Popular", href: "#", current: true },
@@ -36,7 +36,7 @@ function classNames(...classes) {
 export default function Home() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const { products } = useProducts(); // Use the context to get products
-
+  
   return (
     <div className="bg-white">
       <div>

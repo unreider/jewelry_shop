@@ -15,7 +15,8 @@ import {
   getUserProducts,
   filterProductsBySearchQuery,
 } from "../lib/db";
-import { useProducts } from "./Context/ProductsContext";
+import { useProducts } from "../context/ProductsProvider";
+import { useUserProducts } from "../context/UserProductsProvider";
 
 const navigation = {
   categories: [
@@ -50,9 +51,9 @@ function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [session, setSession] = useState(null);
-  const [cartCount, setCartCount] = useState(0);
   const router = useRouter();
-  const {setProducts} = useProducts();
+  const { setProducts } = useProducts();
+  const { userProducts, setUserProducts } = useUserProducts();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -61,7 +62,7 @@ function Header() {
         setSession(session);
         const userId = await getUserIdByName(session.user.name);
         const products = await getUserProducts(userId);
-        setCartCount(products.length);
+        setUserProducts(products); // Update the context
       }
     };
     fetchData();
@@ -182,22 +183,6 @@ function Header() {
                 )}
               </div>
 
-              {/* Currency selector
-              <div className="hidden lg:ml-8 lg:flex">
-                <a
-                  href="#"
-                  className="flex items-center text-gray-700 hover:text-gray-800"
-                >
-                  <img
-                    src="https://tailwindui.com/img/flags/flag-canada.svg"
-                    alt=""
-                    className="block h-auto w-5 flex-shrink-0"
-                  />
-                  <span className="ml-3 block text-sm font-medium">CAD</span>
-                  <span className="sr-only">, change currency</span>
-                </a>
-              </div> */}
-
               {/* Search */}
               <div className="flex lg:ml-6">
                 <button
@@ -221,7 +206,7 @@ function Header() {
                       aria-hidden="true"
                     />
                     <span className="ml-2 text-sm font-medium text-gray-700 group-hover:text-gray-800">
-                      {cartCount}
+                      {userProducts.length}
                     </span>
                     <span className="sr-only">items in cart, view bag</span>
                   </Link>

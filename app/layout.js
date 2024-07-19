@@ -2,9 +2,10 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import AuthProvider from "./context/AuthProvider";
 
-import { ProductsProvider } from "./components/Context/ProductsContext";
+import { ProductsProvider } from "./context/ProductsProvider";
 import Footer from "./components/Footer";
 import Header from "./components/Header";
+import { UserProductsProvider } from "./context/UserProductsProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,9 +19,11 @@ export default function RootLayout({ children }) {
     <html lang="en" className="h-full bg-white">
       <body className={inter.className}>
         <ProductsProvider>
-          <Header />
-          <AuthProvider>{children}</AuthProvider>
-          <Footer />
+          <UserProductsProvider>
+            <Header />
+            <AuthProvider>{children}</AuthProvider>
+            <Footer />
+          </UserProductsProvider>
         </ProductsProvider>
       </body>
     </html>

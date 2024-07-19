@@ -12,58 +12,66 @@ import {
 } from "../lib/db";
 import Image from "next/image";
 import Link from "next/link";
+import { useUserProducts } from "../context/UserProductsProvider";
 
 export default function Cart() {
   const [session, setSession] = useState(null);
-  const [userProducts, setUserProducts] = useState([]);
+  // const [userProducts, setUserProducts] = useState([]);
+  const { userProducts, setUserProducts } = useUserProducts();
   const [products, setProducts] = useState([]);
   const [quantities, setQuantities] = useState({});
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchSessionData = async () => {
       const session = await getSession();
       if (session) {
         setSession(session);
         const userId = await getUserIdByName(session.user.name);
         const userProducts = await getUserProducts(userId);
         setUserProducts(userProducts);
-        let pr = [];
-        for (let i = 0; i < userProducts.length; ++i) {
-          let product = await getProductById(userProducts[i].product_id);
-          pr.push(product);
-        }
-        setProducts(pr);
-
-        try {
-          const newQuantities = {};
-          for (const product of pr) {
-            const quantity = await getUserProductQuantity(userId, product.id);
-            newQuantities[product.id] = quantity;
-          }
-          setQuantities(newQuantities);
-        } catch (error) {
-          console.error("Error fetching quantities:", error);
-        }
       }
     };
-    fetchData();
+    fetchSessionData();
   }, []);
 
-  if (userProducts && session) {
-    console.log("userProducts", userProducts);
-    console.log("products", products);
-  }
+  useEffect(() => {
+    const fetchProductData = async () => {
+      let pr = [];
+      for (let i = 0; i < userProducts.length; ++i) {
+        let product = await getProductById(userProducts[i].product_id);
+        pr.push(product);
+      }
+      setProducts(pr);
+    };
+    if (userProducts.length > 0) {
+      fetchProductData();
+    }
+  }, [userProducts]);
+
+  useEffect(() => {
+    const fetchQuantities = async () => {
+      if (session) {
+        const userId = await getUserIdByName(session.user.name);
+        const newQuantities = {};
+        for (const product of userProducts) {
+          const quantity = await getUserProductQuantity(userId, product.product_id);
+          newQuantities[product.product_id] = quantity;
+        }
+        setQuantities(newQuantities);
+      }
+    };
+    fetchQuantities();
+  }, [session, userProducts]);
 
   const calculateTotalAmount = () => {
     let res = 0;
     products.forEach((p) => {
-      res += p.price * quantities[p.id];
+      res += p.price * (quantities[p.id] || 0);
     });
     return res;
   };
 
   const handleQuantityChange = (productId, quantity) => {
-    // Update quantities state as the user changes quantity
     setQuantities((prevQuantities) => ({
       ...prevQuantities,
       [productId]: quantity,
@@ -83,15 +91,17 @@ export default function Cart() {
   const handleRemove = async (productId) => {
     const userId = await getUserIdByName(session.user.name);
     await deleteUserProduct(userId, productId);
-    setUserProducts(prevData => (
-      prevData.filter(userProduct => (userProduct.product_id !== productId))
-    ))
-    console.log('userProducts after', userProducts.filter(userProduct => (userProduct.product_id !== productId)));
+    setUserProducts((prevData) =>
+      prevData.filter((product) => product.product_id !== productId)
+    );
+    setProducts((prevProducts) =>
+      prevProducts.filter((product) => product.id !== productId)
+    );
   };
 
   return (
     <section>
-      {session && userProducts && (
+      {session && userProducts.length > 0 && (
         <div className="mx-auto max-w-screen-xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
           <div className="mx-auto max-w-3xl">
             <header className="text-center">
@@ -105,9 +115,8 @@ export default function Cart() {
                 {userProducts &&
                   products &&
                   products.map((product) => (
-                    <li className="flex items-center gap-4 w-full">
+                    <li key={product.id} className="flex items-center gap-4 w-full">
                       <Image
-                        key={product.id}
                         width={30}
                         height={30}
                         src={`/${product.image}`}
@@ -146,7 +155,6 @@ export default function Cart() {
                           <input
                             type="number"
                             min="1"
-                            // placeholder={quantity}
                             value={quantities[product.id] || ""}
                             id="Line1Qty"
                             className="h-8 w-12 rounded border-gray-200 bg-gray-50 p-0 text-center text-xs text-gray-600 [-moz-appearance:_textfield] focus:outline-none [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none"
@@ -185,23 +193,8 @@ export default function Cart() {
               <div className="mt-8 flex justify-end border-t border-gray-100 pt-8">
                 <div className="w-screen max-w-lg space-y-4">
                   <dl className="space-y-0.5 text-sm text-gray-700">
-                    {/* <div className="flex justify-between">
-                      <dt>Subtotal</dt>
-                      <dd>£250</dd>
-                    </div> */}
-
-                    {/* <div className="flex justify-between">
-                      <dt>VAT</dt>
-                      <dd>£25</dd>
-                    </div>
-
-                    <div className="flex justify-between">
-                      <dt>Discount</dt>
-                      <dd>-£20</dd>
-                    </div> */}
-
                     {products.map((p) => (
-                      <div className="flex justify-between">
+                      <div key={p.id} className="flex justify-between">
                         <dt>
                           {p.name} | x{quantities[p.id]}
                         </dt>
@@ -214,29 +207,6 @@ export default function Cart() {
                       <dd>{calculateTotalAmount()}֏</dd>
                     </div>
                   </dl>
-
-                  {/* <div className="flex justify-end">
-                    <span className="inline-flex items-center justify-center rounded-full bg-indigo-100 px-2.5 py-0.5 text-indigo-700">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth="1.5"
-                        stroke="currentColor"
-                        className="-ms-1 me-1.5 h-4 w-4"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z"
-                        />
-                      </svg>
-
-                      <p className="whitespace-nowrap text-xs">
-                        2 Discounts Applied
-                      </p>
-                    </span>
-                  </div> */}
 
                   <div className="flex justify-end">
                     <a

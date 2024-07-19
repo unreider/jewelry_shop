@@ -14,7 +14,7 @@ import {
   DisclosurePanel,
 } from "@headlessui/react";
 import { MinusIcon, PlusIcon } from "@heroicons/react/20/solid";
-import { useProducts } from "./Context/ProductsContext";
+import { useProducts } from "../context/ProductsProvider";
 
 const filters = [
   {
