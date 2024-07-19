@@ -2,10 +2,8 @@
 
 import { sql } from "@vercel/postgres";
 import { db } from "@vercel/postgres";
+import { parse } from "next/dist/build/swc";
 import { NextResponse } from "next/server";
-
-import fs from "fs";
-import path from "path";
 
 export async function createUuidOssp() {
   await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
@@ -23,6 +21,7 @@ export async function createCategories(client) {
   return NextResponse.json({ result }, { status: 200 });
 }
 
+// gender: 'm' - men, 'w' - women, 'x' - unisex
 export async function createProducts(client) {
   const result = await client.sql`
   CREATE TABLE IF NOT EXISTS products (
@@ -31,6 +30,7 @@ export async function createProducts(client) {
     description TEXT NOT NULL,
     price INT NOT NULL,
     image VARCHAR(255),
+    gender CHAR NOT NULL DEFAULT 'x',
     category_id UUID REFERENCES categories(id)
   )`;
   return NextResponse.json({ result }, { status: 200 });
@@ -52,11 +52,13 @@ export async function createUserProducts(client) {
   CREATE TABLE IF NOT EXISTS user_products (
     user_id UUID REFERENCES users(id),
     product_id UUID REFERENCES products(id),
+    quantity INTEGER NOT NULL DEFAULT 1,
     PRIMARY KEY (user_id, product_id)
   )`;
   return NextResponse.json({ result }, { status: 200 });
 }
 
+// Category functions
 export async function insertCategory(name) {
   const category = await sql`INSERT INTO categories (name) VALUES (${name})`;
   return category;
@@ -83,39 +85,28 @@ export async function changeCategory(oldName, newName) {
 export async function getCategories() {
   const categories = await sql`SELECT (name) FROM categories`;
   // to get only names in an array
-  const parsedCategories = categories.rows.map((row) => row.name);
-  return parsedCategories;
+  // const parsedCategories = categories.rows.map((row) => row.name);
+  return categories.rows;
 }
 
 async function getProductCategoryId(name) {
-  console.log("name", name);
   const category_id =
     await sql`SELECT (id) FROM categories WHERE name = ${name}`;
   return category_id.rows[0].id;
 }
 
+// Product functions
 export async function insertProduct(data) {
   const parsedInt = parseInt(data.price);
   const category_id = await getProductCategoryId(data.category);
-  const imageFileName = `${Date.now()}-${data.image.file.name.replace(
-    / /g,
-    "-"
-  )}`;
-  // replaces all occurrences of spaces globally (/ /g) with '-'.
-
-  const directory = "public/uploads";
-  const imagePathOnServer = path.join(directory, imageFileName);
-  const imagePathOnPage = path.join("/uploads", imageFileName);
-
-  if (!fs.existsSync(directory)) {
-    fs.mkdirSync(directory);
+  try {
+    const product =
+      await sql`INSERT INTO products (name, description, price, image, category_id) VALUES (${data.name}, ${data.desc}, ${parsedInt}, ${data.image}, ${category_id})`;
+    return product;
+  } catch (error) {
+    console.error("Error inserting product:", error);
+    throw error; // Rethrow the error to be handled by the caller
   }
-
-  fs.writeFileSync(imagePathOnServer, data.image.fileData);
-
-  const product =
-    await sql`INSERT INTO products (name, description, price, image, category_id) VALUES (${data.name}, ${data.desc}, ${parsedInt}, ${imagePathOnPage}, ${category_id})`;
-  return product;
 }
 
 export async function deleteProduct(name) {
@@ -126,15 +117,9 @@ export async function changeProduct(data) {
   const name = data.formData.name;
   const desc = data.formData.desc;
   const price = data.formData.price;
-  const imageFileName = `${Date.now()}-${data.formData.image.file.name.replace(
-    / /g,
-    "-"
-  )}`;
-  // replaces all occurrences of spaces globally (/ /g) with '-'.
-  imageFileName.replace(/ /g, "-");
-  const imagePathOnPage = path.join("/uploads", imageFileName);
+  const image = data.formData?.image;
   const category_id = await getProductCategoryId(data.formData.category);
-  const product = await getProduct(data.oldName);
+  const product = await getProductByName(data.oldName);
   const productId = product.id;
 
   try {
@@ -144,7 +129,7 @@ export async function changeProduct(data) {
         name = ${name},
         description = ${desc},
         price = ${price},
-        image = ${imagePathOnPage},
+        image = ${image},
         category_id = ${category_id}
       WHERE
         id = ${productId}
@@ -159,10 +144,31 @@ export async function changeProduct(data) {
 export async function getProducts() {
   const products = await sql`SELECT * FROM products`;
   // to get only names in an array
-  const parsedProducts = products.rows.map((row) => row.name);
-  return parsedProducts;
+  // const parsedProducts = products.rows.map((row) => row.name);
+  return products.rows;
 }
 
+export async function filterProductsByGender(gender) {
+  const products = await sql`SELECT * FROM products WHERE gender = ${gender}`;
+  return products.rows;
+}
+
+export async function filterProductsByCategory(categoryName) {
+  const categoryId = await getCategoryIdByName(categoryName)
+  const products = await sql`SELECT * FROM products WHERE category_id = ${categoryId}`;
+  return products.rows;
+}
+
+export async function filterProductsBySearchQuery(searchQuery) {
+  const products = await getProducts()
+  const filteredProducts = products.filter((product) =>
+    product.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  return filteredProducts;
+}
+
+
+// User functions
 export async function insertUser(data) {
   const user = await sql`INSERT INTO users (name, email, password)
     VALUES (${data.name}, ${data.email}, ${data.password})`;
@@ -200,7 +206,27 @@ export async function getUsers() {
   return parsedUsers;
 }
 
-// export async function insertUserProducts(data) {}
+// User's Products functions
+export async function insertUserProduct(userId, productId) {
+  await sql`INSERT INTO user_products (user_id, product_id)
+    VALUES (${userId}, ${productId})`;
+}
+
+export async function deleteUserProduct(userId, productId) {
+  await sql`DELETE FROM user_products WHERE user_id = ${userId} AND product_id = ${productId}`;
+}
+
+export async function updateUserProductQuantity(userId, productId, quantity) {
+  await sql`UPDATE user_products
+    SET quantity = ${quantity}
+    WHERE user_id = ${userId} AND product_id = ${productId}`;
+}
+
+export async function getUserProductQuantity(userId, productId) {
+  const quantity = await sql`SELECT (quantity) FROM user_products WHERE
+    user_id = ${userId} AND product_id = ${productId}`;
+  return quantity.rows[0].quantity;
+}
 
 export async function getUser(email) {
   const user = await sql`SELECT * FROM users WHERE email = ${email}`;
@@ -210,10 +236,21 @@ export async function getUser(email) {
 export async function getUserIdByName(name) {
   const user = await sql`SELECT id FROM users WHERE name = ${name}`;
   if (user.rows.length > 0) return user.rows[0].id;
-  return null
+  return null;
 }
 
-export async function getProduct(name) {
+export async function getCategoryIdByName(name) {
+  const category = await sql`SELECT * FROM categories WHERE name = ${name}`;
+  const parsedCategory = category.rows.map((row) => row.id);
+  return parsedCategory[0];
+}
+
+export async function getProductById(id) {
+  const product = await sql`SELECT * FROM products WHERE id = ${id}`;
+  return product.rows[0];
+}
+
+export async function getProductByName(name) {
   const product = await sql`SELECT * FROM products WHERE name = ${name}`;
   return product.rows[0];
 }
@@ -222,6 +259,19 @@ export async function getProductCategoryIdByName(id) {
   const productCategory =
     await sql`SELECT (name) FROM categories WHERE id = ${id}`;
   return productCategory.rows[0].name;
+}
+
+export async function getUserProducts(userId) {
+  const userProducts =
+    await sql`SELECT * FROM user_products WHERE user_id = ${userId}`;
+  return userProducts.rows;
+}
+
+export async function checkUserProductExists(userId, productId) {
+  const userProducts =
+    await sql`SELECT * FROM user_products WHERE user_id = ${userId} AND product_id = ${productId}`;
+  if (userProducts.rows.length) return true;
+  return false;
 }
 
 // check if name or email already exists in the database

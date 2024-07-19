@@ -9,6 +9,10 @@ const nextConfig = {
   //   config.externals = [...config.externals, "bcrypt"];
   //   return config;
   // },
+  
+  // experimental: {
+  //   serverActions: true
+  // }
 };
 
 export default nextConfig;

@@ -2,13 +2,16 @@
 
 import { useState } from "react";
 import { insertProduct } from "@/app/lib/db";
+// import { writeFile } from "fs/promises";
+import path from "path";
 
 export default function AddProduct({ categories }) {
   const [formData, setFormData] = useState({
     name: "",
     desc: "",
     price: "",
-    image: {},
+    image: "",
+    gender: "",
     category: "",
   });
 
@@ -23,35 +26,56 @@ export default function AddProduct({ categories }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await insertProduct(formData);
-    setFormData({
-      name: "",
-      desc: "",
-      price: "",
-      image: {},
-      category: "",
-    });
-  };
 
-  const handleProductImage = (e) => {
-    const file = e.target.files[0];
-    const parsedFile = {
-      name: file.name,
-      size: file.size,
-      type: file.type,
-    };
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = function (event) {
-        const fileData = event.target.result;
-        setFormData((prevData) => ({
-          ...prevData,
-          image: { file: parsedFile, fileData: fileData },
-        }));
-      };
-      reader.readAsDataURL(file);
+    if (!formData.image) return
+
+    try {
+
+      console.log('formData.image', formData.image);
+
+      await insertProduct(formData);
+
+      setFormData({
+        name: "",
+        desc: "",
+        price: "",
+        image: "",
+        gender: "",
+        category: "",
+      });
+      
+    }
+    catch (error) {
+      console.error(error)
     }
   };
+
+  const handleProductImage = async (e) => {
+    const file = e.target.files[0];
+
+    const imageFileName = `${Date.now()}-${file.name.replace(/ /g, "-")}`;
+
+    const data = new FormData();
+    data.set('file', file)
+    data.set('imageFileName', imageFileName)
+
+    const response = await fetch('/api/uploadImage', {
+      method: 'POST',
+      body: data,
+    });
+
+    if (!response.ok) throw new Error(await response.text())
+
+    const pageDirectory = path.resolve("uploads");
+    const pagePath = path.join(pageDirectory, imageFileName);
+
+    console.log('pagePath', pagePath);
+
+    setFormData((prevData) => ({
+      ...prevData,
+      image: pagePath,
+    }));
+  }
 
   return (
     <form onSubmit={handleSubmit}>
@@ -83,16 +107,35 @@ export default function AddProduct({ categories }) {
         onChange={handleChange}
       />
       <div className="flex items-center justify-center mt-3">
-        <label className="cursor-pointer flex items-center justify-center w-32 h-16 bg-gray-100 rounded-lg border border-gray-300 hover:border-gray-500 focus:border-gray-500 focus:outline-none transition duration-300 ease-in-out">
+        {/* <label className="cursor-pointer flex items-center justify-center w-32 h-16 bg-gray-100 rounded-lg border border-gray-300 hover:border-gray-500 focus:border-gray-500 focus:outline-none transition duration-300 ease-in-out"> */}
           <input
             type="file"
+            name="file"
             accept="image/*"
             onChange={handleProductImage}
-            className="hidden"
+            // className="hidden"
           />
-          Upload Image
-        </label>
+          {/* Upload Image
+        </label> */}
+
+        {/* <ServerUploadImage /> */}
+        {/* <input type="file" name="file" />
+        <input type="submit" value="Upload" /> */}
       </div>
+
+      <input
+        type="text"
+        pattern="[mwx]{1}"
+        title="Please enter m/w/x"
+        min="0"
+        step="1"
+        name="gender"
+        value={formData.gender}
+        placeholder={`What gender is the Product for (m/w/x)`}
+        className="border border-black rounded p-2 mt-3"
+        onChange={handleChange}
+        required
+      />
 
       <select
         name="category"

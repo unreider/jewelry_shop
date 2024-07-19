@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { StarIcon } from '@heroicons/react/20/solid'
 import { RadioGroup } from '@headlessui/react'
-import Header from '../Header';
 
 const product = {
   name: 'Basic Tee 6-Pack',

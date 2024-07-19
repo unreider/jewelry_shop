@@ -13,10 +13,11 @@ export default function Admin() {
     async function fetchData() {
       try {
         const fetchedCategories = await getCategories();
-        setCategories(fetchedCategories);
+        const parsedCategories = fetchedCategories.map((row) => row.name);
+        setCategories(parsedCategories);
         const fetchedProducts = await getProducts();
-        // const parsedProducts = fetchedProducts.map((row) => row.name);
-        setProducts(fetchedProducts);
+        const parsedProducts = fetchedProducts.map((row) => row.name);
+        setProducts(parsedProducts);
         const fetchedUsers = await getUsers();
         setUsers(fetchedUsers);
         // console.log(categories); // Output: Array of categories
@@ -74,7 +75,7 @@ export default function Admin() {
       <div className="w-full h-full text-center mt-12 font-bold text-xl">
         Users
       </div>
-      <div className="w-full h-full p-9 mt-2 grid grid-cols-3 gap-x-6 gap-y-10">
+      <div className="w-full h-full p-9 mt-2 mb-10 grid grid-cols-3 gap-x-6 gap-y-10">
         <AdminCard action="add" title="user" />
         {users.length > 0 ? (
           <>

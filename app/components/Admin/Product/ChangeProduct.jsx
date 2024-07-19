@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { changeProduct } from "@/app/lib/db";
 
-import { getProduct, getProductCategoryIdByName } from "@/app/lib/db";
+import { getProductByName, getProductCategoryIdByName } from "@/app/lib/db";
+import path from "path";
 
 export default function ChangeProduct({ categories, products }) {
   const [productSelected, setProductSelected] = useState("");
@@ -11,7 +12,8 @@ export default function ChangeProduct({ categories, products }) {
     name: "",
     desc: "",
     price: "",
-    image: {},
+    image: "",
+    gender: "",
     category: "",
   });
 
@@ -31,37 +33,45 @@ export default function ChangeProduct({ categories, products }) {
       name: "",
       desc: "",
       price: "",
-      image: {},
+      image: "",
+      gender: "",
       category: "",
     });
   };
 
-  const handleProductImage = (e) => {
+  const handleProductImage = async (e) => {
     const file = e.target.files[0];
-    const parsedFile = {
-      name: file.name,
-      size: file.size,
-      type: file.type,
-    };
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = function (event) {
-        const fileData = event.target.result;
-        setFormData((prevData) => ({
-          ...prevData,
-          image: { file: parsedFile, fileData: fileData },
-        }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+
+    const imageFileName = `${Date.now()}-${file.name.replace(/ /g, "-")}`;
+
+    const data = new FormData();
+    data.set('file', file)
+    data.set('imageFileName', imageFileName)
+
+    const response = await fetch('/api/uploadImage', {
+      method: 'POST',
+      body: data,
+    });
+
+    if (!response.ok) throw new Error(await response.text())
+
+    const pageDirectory = path.resolve("uploads");
+    const pagePath = path.join(pageDirectory, imageFileName);
+
+    console.log('pagePath', pagePath);
+
+    setFormData((prevData) => ({
+      ...prevData,
+      image: pagePath,
+    }));
+  }
 
   const handleChangeProduct = async (e) => {
     e.preventDefault();
     const value = e.target.value;
     setProductSelected(value);
 
-    const parsedProduct = await getProduct(value);
+    const parsedProduct = await getProductByName(value);
     const productCategoryName = await getProductCategoryIdByName(
       parsedProduct.category_id
     );
@@ -71,6 +81,8 @@ export default function ChangeProduct({ categories, products }) {
       name: parsedProduct.name,
       desc: parsedProduct.description,
       price: parsedProduct.price,
+      image: parsedProduct.image,
+      gender: parsedProduct.gender,
       category: productCategoryName,
     }))
   };
@@ -128,6 +140,20 @@ export default function ChangeProduct({ categories, products }) {
           Upload Image
         </label>
       </div>
+
+      <input
+        type="text"
+        pattern="[mwx]{1}"
+        title="Please enter m/w/x"
+        min="0"
+        step="1"
+        name="gender"
+        value={formData.gender}
+        placeholder={`What gender is the Product for (m/w/x)`}
+        className="border border-black rounded p-2 mt-3"
+        onChange={handleChange}
+        required
+      />
 
       <select
         name="category"
