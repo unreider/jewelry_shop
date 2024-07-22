@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { insertProduct } from "@/app/lib/db";
-// import { writeFile } from "fs/promises";
 import path from "path";
+import { v4 as uuidv4 } from "uuid";
+import { useCategories } from "@/app/context/CategoriesProvider";
+import { useProducts } from "@/app/context/ProductsProvider";
 
-export default function AddProduct({ categories }) {
+export default function AddProduct() {
   const [formData, setFormData] = useState({
     name: "",
     desc: "",
@@ -14,6 +16,8 @@ export default function AddProduct({ categories }) {
     gender: "",
     category: "",
   });
+  const { categories } = useCategories();
+  const { setProducts, setProductNames } = useProducts();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -26,14 +30,19 @@ export default function AddProduct({ categories }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData.image) return;
 
-    if (!formData.image) return
+    // Generate a unique ID for the new product
+    const newProduct = { ...formData, id: uuidv4() };
 
     try {
+      await insertProduct(newProduct);
 
-      console.log('formData.image', formData.image);
+      // Update the products state with the new product
+      setProducts((prevProducts) => [...prevProducts, newProduct]);
 
-      await insertProduct(formData);
+      // Update the product names state with the new product
+      setProductNames((prevProductNames) => [...prevProductNames, formData.name])
 
       setFormData({
         name: "",
@@ -43,39 +52,31 @@ export default function AddProduct({ categories }) {
         gender: "",
         category: "",
       });
-      
-    }
-    catch (error) {
-      console.error(error)
+    } catch (error) {
+      console.error(error);
     }
   };
 
   const handleProductImage = async (e) => {
     const file = e.target.files[0];
-
     const imageFileName = `${Date.now()}-${file.name.replace(/ /g, "-")}`;
-
     const data = new FormData();
-    data.set('file', file)
-    data.set('imageFileName', imageFileName)
+    data.set("file", file);
+    data.set("imageFileName", imageFileName);
 
-    const response = await fetch('/api/uploadImage', {
-      method: 'POST',
+    const response = await fetch("/api/uploadImage", {
+      method: "POST",
       body: data,
     });
-
-    if (!response.ok) throw new Error(await response.text())
-
+    if (!response.ok) throw new Error(await response.text());
     const pageDirectory = path.resolve("uploads");
     const pagePath = path.join(pageDirectory, imageFileName);
-
-    console.log('pagePath', pagePath);
 
     setFormData((prevData) => ({
       ...prevData,
       image: pagePath,
     }));
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit}>
@@ -108,14 +109,14 @@ export default function AddProduct({ categories }) {
       />
       <div className="flex items-center justify-center mt-3">
         {/* <label className="cursor-pointer flex items-center justify-center w-32 h-16 bg-gray-100 rounded-lg border border-gray-300 hover:border-gray-500 focus:border-gray-500 focus:outline-none transition duration-300 ease-in-out"> */}
-          <input
-            type="file"
-            name="file"
-            accept="image/*"
-            onChange={handleProductImage}
-            // className="hidden"
-          />
-          {/* Upload Image
+        <input
+          type="file"
+          name="file"
+          accept="image/*"
+          onChange={handleProductImage}
+          // className="hidden"
+        />
+        {/* Upload Image
         </label> */}
 
         {/* <ServerUploadImage /> */}
@@ -144,11 +145,12 @@ export default function AddProduct({ categories }) {
         onChange={handleChange}
       >
         <option value="">Select a Category</option>
-        {categories.map((cat) => (
-          <option key={cat} value={cat}>
-            {cat}
-          </option>
-        ))}
+        {categories &&
+          categories.map((cat) => (
+            <option key={cat} value={cat}>
+              {cat}
+            </option>
+          ))}
       </select>
       <div className="font-bold text-lg mt-7">
         <button

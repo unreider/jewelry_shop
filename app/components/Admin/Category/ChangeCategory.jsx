@@ -2,14 +2,31 @@
 
 import { useState } from "react";
 import { changeCategory } from "@/app/lib/db";
+import { useCategories } from "@/app/context/CategoriesProvider";
 
-export default function ChangeCategory({categories}) {
+export default function ChangeCategory() {
   const [category, setCategory] = useState("");
   const [categorySelected, setCategorySelected] = useState("");
+  const { categories, setCategories } = useCategories();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Make sure that both fields are filled before proceeding
+    if (!categorySelected || !category) {
+      alert("Please select a category and provide a new name.");
+      return;
+    }
+
     await changeCategory(categorySelected, category);
+  
+    // Update the local state immediately
+    setCategories((prevCategories) =>
+      prevCategories.map((cat) =>
+        cat === categorySelected ? category : cat
+      )
+    );
+
     setCategory("");
     setCategorySelected("");
   };
@@ -23,11 +40,12 @@ export default function ChangeCategory({categories}) {
         onChange={(e) => setCategorySelected(e.target.value)}
       >
         <option value="">{`Select a Category`}</option>
-        {categories.map((cat) => (
-          <option key={cat} value={cat}>
-            {cat}
-          </option>
-        ))}
+        {categories &&
+          categories.map((cat) => (
+            <option key={cat} value={cat}>
+              {cat}
+            </option>
+          ))}
       </select>
       <input
         type="text"
@@ -46,5 +64,5 @@ export default function ChangeCategory({categories}) {
         </button>
       </div>
     </form>
-  )
+  );
 }

@@ -2,14 +2,19 @@
 
 import { useState } from "react";
 import { deleteCategory } from "@/app/lib/db";
+import { useCategories } from "@/app/context/CategoriesProvider";
 
-export default function DeleteCategory({ categories }) {
+export default function DeleteCategory() {
   const [categorySelected, setCategorySelected] = useState("");
+  const { categories, setCategories } = useCategories();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     await deleteCategory(categorySelected);
     setCategorySelected("");
+    setCategories((prevCategories) =>
+      prevCategories.filter((category) => category !== categorySelected)
+    );
   };
 
   return (
@@ -21,11 +26,12 @@ export default function DeleteCategory({ categories }) {
         onChange={(e) => setCategorySelected(e.target.value)}
       >
         <option value="">{`Select a Category`}</option>
-        {categories.map((cat) => (
-          <option key={cat} value={cat}>
-            {cat}
-          </option>
-        ))}
+        {categories &&
+          categories.map((cat) => (
+            <option key={cat} value={cat}>
+              {cat}
+            </option>
+          ))}
       </select>
       <div className="font-bold text-lg mt-7">
         <button

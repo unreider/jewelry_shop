@@ -2,8 +2,10 @@
 
 const bcrypt = require("bcryptjs");
 
+import { v4 as uuidv4 } from "uuid";
 import { useState } from "react";
 import { insertUser } from "@/app/lib/db";
+import { useUsers } from "@/app/context/UsersProvider";
 
 export default function AddUser() {
   const [formData, setFormData] = useState({
@@ -11,18 +13,21 @@ export default function AddUser() {
     email: "",
     password: "",
   });
+  const { setUsers } = useUsers();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const hashedPassword = await bcrypt.hash(formData.password, 10); // 10-digits generated
-    // one problem is that it shows in the page hashed password and then sends it
-    setFormData((prevData) => ({
-      ...prevData,
-      password: hashedPassword,
-    }));
 
-    await insertUser(formData);
+    // Generate a unique ID for the new user
+    const newUser = { ...formData, password: hashedPassword, id: uuidv4() };
+
+    await insertUser(newUser);
+    
+    // Update the users state with just the user names
+    setUsers((prevUsers) => [...prevUsers, formData.name]);
+
     setFormData({
       name: "",
       email: "",

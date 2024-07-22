@@ -4,26 +4,35 @@ const bcrypt = require("bcryptjs");
 
 import { useState } from "react";
 import { changeUser } from "@/app/lib/db";
+import { useUsers } from "@/app/context/UsersProvider";
 
-export default function ChangeUser({users}) {
+export default function ChangeUser() {
   const [userSelected, setUserSelected] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
   });
+  const { users, setUsers } = useUsers();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const hashedPassword = await bcrypt.hash(formData.password, 10); // 10-digits generated
-    // one problem is that it shows in the page hashed password and then sends it
-    setFormData((prevData) => ({
-      ...prevData,
-      password: hashedPassword,
-    }))
+ 
+    // Create the updated user data
+    const updatedUser = { ...formData, password: hashedPassword };
 
-    await changeUser({userSelected: userSelected, formData: formData});
+    // Perform the user update in the database
+    await changeUser({ oldName: userSelected, formData: updatedUser });
+
+    // Update the users state with the changed user name
+    setUsers((prevUsers) =>
+      prevUsers.map((user) =>
+        user === userSelected ? formData.name : user
+      )
+    );
+
     setFormData({
       name: "",
       email: "",
@@ -49,7 +58,7 @@ export default function ChangeUser({users}) {
         onChange={(e) => setUserSelected(e.target.value)}
       >
         <option value="">{`Select a User`}</option>
-        {users.map((user) => (
+        {users && users.map((user) => (
           <option key={user} value={user}>
             {user}
           </option>
@@ -88,5 +97,5 @@ export default function ChangeUser({users}) {
         </button>
       </div>
     </form>
-  )
+  );
 }

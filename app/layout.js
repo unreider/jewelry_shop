@@ -17,14 +17,16 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className="h-full bg-white">
-      <body className={inter.className}>
-        <ProductsProvider>
-          <UserProductsProvider>
-            <Header />
-            <AuthProvider>{children}</AuthProvider>
-            <Footer />
-          </UserProductsProvider>
-        </ProductsProvider>
+      <body className={`h-full flex flex-col ${inter.className}`}>
+        <AuthProvider>
+          <ProductsProvider>
+            <UserProductsProvider>
+              <Header />
+              <main className="flex-grow">{children}</main>
+              <Footer />
+            </UserProductsProvider>
+          </ProductsProvider>
+        </AuthProvider>
       </body>
     </html>
   );

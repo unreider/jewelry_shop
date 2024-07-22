@@ -16,7 +16,6 @@ import { useUserProducts } from "../context/UserProductsProvider";
 
 export default function Cart() {
   const [session, setSession] = useState(null);
-  // const [userProducts, setUserProducts] = useState([]);
   const { userProducts, setUserProducts } = useUserProducts();
   const [products, setProducts] = useState([]);
   const [quantities, setQuantities] = useState({});
@@ -71,21 +70,23 @@ export default function Cart() {
     return res;
   };
 
-  const handleQuantityChange = (productId, quantity) => {
-    setQuantities((prevQuantities) => ({
-      ...prevQuantities,
-      [productId]: quantity,
-    }));
-  };
-
-  const handleQuantitySubmit = (productId) => async (e) => {
-    e.preventDefault();
-    const userId = await getUserIdByName(session.user.name);
-    await updateUserProductQuantity(
-      userId,
-      productId,
-      parseInt(quantities[productId])
-    );
+  const handleQuantityChange = (productId) => async (e) => {
+    const newQuantity = parseInt(e.target.value);
+    if (!isNaN(newQuantity)) {
+      setQuantities((prevQuantities) => ({
+        ...prevQuantities,
+        [productId]: newQuantity >= 1 ? newQuantity : 0,
+      }));
+      if (newQuantity >= 1) {
+        const userId = await getUserIdByName(session.user.name);
+        await updateUserProductQuantity(userId, productId, newQuantity);
+      }
+    } else {
+      setQuantities((prevQuantities) => ({
+        ...prevQuantities,
+        [productId]: 0,
+      }));
+    }
   };
 
   const handleRemove = async (productId) => {
@@ -146,23 +147,19 @@ export default function Cart() {
                       </div>
 
                       <div className="flex flex-1 items-center justify-end gap-2">
-                        <form onSubmit={handleQuantitySubmit(product.id)}>
-                          <label htmlFor="Line1Qty" className="sr-only">
-                            {" "}
-                            Quantity{" "}
-                          </label>
+                        <label htmlFor="Line1Qty" className="sr-only">
+                          {" "}
+                          Quantity{" "}
+                        </label>
 
-                          <input
-                            type="number"
-                            min="1"
-                            value={quantities[product.id] || ""}
-                            id="Line1Qty"
-                            className="h-8 w-12 rounded border-gray-200 bg-gray-50 p-0 text-center text-xs text-gray-600 [-moz-appearance:_textfield] focus:outline-none [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none"
-                            onChange={(e) =>
-                              handleQuantityChange(product.id, e.target.value)
-                            }
-                          />
-                        </form>
+                        <input
+                          type="number"
+                          min="1"
+                          value={quantities[product.id] || ""}
+                          id="Line1Qty"
+                          className="h-8 w-12 rounded border-gray-200 bg-gray-50 p-0 text-center text-xs text-gray-600 [-moz-appearance:_textfield] focus:outline-none [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none"
+                          onChange={handleQuantityChange(product.id)}
+                        />
 
                         <button
                           className="text-gray-600 transition hover:text-red-600"
@@ -198,7 +195,7 @@ export default function Cart() {
                         <dt>
                           {p.name} | x{quantities[p.id]}
                         </dt>
-                        <dd>{p.price * quantities[p.id]}֏</dd>
+                        <dd>{isNaN(p.price * quantities[p.id]) ? 0 : p.price * quantities[p.id]}֏</dd>
                       </div>
                     ))}
 

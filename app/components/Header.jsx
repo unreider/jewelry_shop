@@ -1,6 +1,6 @@
 "use client";
 import { Fragment, useState, useEffect } from "react";
-import { getSession, signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { Dialog, Transition } from "@headlessui/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -50,23 +50,21 @@ function Header() {
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [session, setSession] = useState(null);
+  const { data: session, status } = useSession();
   const router = useRouter();
   const { setProducts } = useProducts();
   const { userProducts, setUserProducts } = useUserProducts();
 
   useEffect(() => {
     const fetchData = async () => {
-      const session = await getSession();
       if (session) {
-        setSession(session);
         const userId = await getUserIdByName(session.user.name);
         const products = await getUserProducts(userId);
         setUserProducts(products); // Update the context
       }
     };
     fetchData();
-  }, []);
+  }, [session]);
 
   const handleSignOut = async () => {
     await signOut({ redirect: false });
@@ -75,11 +73,8 @@ function Header() {
 
   const handleSearchSubmit = async (e) => {
     e.preventDefault();
-
     const filteredProducts = await filterProductsBySearchQuery(searchQuery);
-
     setProducts(filteredProducts);
-
     setSearchOpen(false);
   };
 
@@ -122,7 +117,7 @@ function Header() {
               <div className="hidden lg:ml-8 lg:block lg:self-stretch">
                 <div className="flex h-full space-x-8">
                   {/* Categories */}
-                  {navigation.categories.map((category) => (
+                  {/* {navigation.categories.map((category) => (
                     <Link
                       key={category.id}
                       href={`/category/${category.id}`}
@@ -132,10 +127,10 @@ function Header() {
                         {category.name}
                       </span>
                     </Link>
-                  ))}
+                  ))} */}
 
                   {/* Pages */}
-                  {navigation.pages.map((page) => (
+                  {/* {navigation.pages.map((page) => (
                     <Link
                       key={page.name}
                       href={page.href}
@@ -143,7 +138,7 @@ function Header() {
                     >
                       {page.name}
                     </Link>
-                  ))}
+                  ))} */}
                 </div>
               </div>
 
@@ -257,27 +252,26 @@ function Header() {
                           <input
                             type="text"
                             className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                            placeholder="Search for products..."
+                            placeholder="Search for products"
+                            value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            required
                           />
                         </div>
                       </div>
                     </div>
                     <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
                       <button
-                        type="button"
-                        className="inline-flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
-                        onClick={() => setSearchOpen(false)}
-                      >
-                        Close
-                      </button>
-                      <button
                         type="submit"
-                        className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:mt-0 sm:w-auto sm:text-sm"
-                        // onClick={handleSearchClick}
+                        className="inline-flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
                       >
                         Search
+                      </button>
+                      <button
+                        type="button"
+                        className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:mt-0 sm:w-auto sm:text-sm"
+                        onClick={() => setSearchOpen(false)}
+                      >
+                        Cancel
                       </button>
                     </div>
                   </form>

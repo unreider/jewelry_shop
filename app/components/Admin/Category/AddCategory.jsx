@@ -2,14 +2,17 @@
 
 import { useState } from "react";
 import { insertCategory } from "@/app/lib/db";
+import { useCategories } from "@/app/context/CategoriesProvider";
 
 export default function AddCategory() {
   const [category, setCategory] = useState("");
+  const { setCategories } = useCategories();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     await insertCategory(category);
     setCategory("");
+    setCategories((prevCategories) => [...prevCategories, category]);
   };
 
   return (

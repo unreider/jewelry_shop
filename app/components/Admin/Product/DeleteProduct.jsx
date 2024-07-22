@@ -1,14 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { deleteProduct } from "@/app/lib/db";
+import { useProducts } from "@/app/context/ProductsProvider";
 
-export default function DeleteProduct({ products }) {
+export default function DeleteProduct() {
   const [productSelected, setProductSelected] = useState("");
+  const { products, setProducts, setProductNames } = useProducts();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     await deleteProduct(productSelected);
+    // Update the products state without the deleted product
+    setProducts((prevProducts) =>
+      prevProducts.filter((product) => product.name !== productSelected)
+    );
+    // Update the product names state without the deleted product
+    setProductNames((prevProductNames) =>
+      prevProductNames.filter((productName) => productName !== productSelected)
+    );
     setProductSelected("");
   };
 
@@ -21,11 +31,12 @@ export default function DeleteProduct({ products }) {
         onChange={(e) => setProductSelected(e.target.value)}
       >
         <option value="">{`Select a Product`}</option>
-        {products.map((prod) => (
-          <option key={prod} value={prod}>
-            {prod}
-          </option>
-        ))}
+        {products &&
+          products.map((row) => (
+            <option key={row.id} value={row.name}>
+              {row.name}
+            </option>
+          ))}
       </select>
       <div className="font-bold text-lg mt-7">
         <button

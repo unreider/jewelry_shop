@@ -1,91 +1,94 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import AdminCard from "./AdminCard";
-import { getCategories, getProducts, getUsers } from "@/app/lib/db";
+import { CategoriesProvider } from "@/app/context/CategoriesProvider";
+import { ProductsProvider } from "@/app/context/ProductsProvider";
+import { UsersProvider } from "@/app/context/UsersProvider";
+
+import AddCategory from "./Category/AddCategory";
+import DeleteCategory from "./Category/DeleteCategory";
+import ChangeCategory from "./Category/ChangeCategory";
+
+import AddProduct from "./Product/AddProduct";
+import DeleteProduct from "./Product/DeleteProduct";
+import ChangeProduct from "./Product/ChangeProduct";
+
+import AddUser from "./User/AddUser";
+import DeleteUser from "./User/DeleteUser";
+import ChangeUser from "./User/ChangeUser";
 
 export default function Admin() {
-  const [categories, setCategories] = useState([]);
-  const [products, setProducts] = useState([]);
-  const [users, setUsers] = useState([]);
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const fetchedCategories = await getCategories();
-        const parsedCategories = fetchedCategories.map((row) => row.name);
-        setCategories(parsedCategories);
-        const fetchedProducts = await getProducts();
-        const parsedProducts = fetchedProducts.map((row) => row.name);
-        setProducts(parsedProducts);
-        const fetchedUsers = await getUsers();
-        setUsers(fetchedUsers);
-        // console.log(categories); // Output: Array of categories
-      } catch (error) {
-        console.error("Error fetching Admin data:", error);
-      }
-    }
-
-    fetchData();
-  }, []); // Run this effect only once when the component mounts
-
   return (
-    <>
-      <div className="w-full h-full text-center mt-12 font-bold text-2xl">
-        Admin Page
-      </div>
-      <div className="w-full h-full text-center mt-12 font-bold text-xl">
-        Categories
-      </div>
-      <div className="w-full h-full p-9 mt-2 grid grid-cols-3 gap-x-6 gap-y-10">
-        <AdminCard action="add" title="category" />
-        {categories.length > 0 ? (
-          <>
-            <AdminCard
-              action="delete"
-              title="category"
-              categories={categories}
-            />
-            <AdminCard
-              action="change"
-              title="category"
-              categories={categories}
-            />
-          </>
-        ) : (
-          <></>
-        )}
-      </div>
+    <ProductsProvider>
+      <CategoriesProvider>
+        <UsersProvider>
+          <div className="text-center mt-12 font-bold text-2xl">Admin Page</div>
+          <div className="text-center mt-12 font-bold text-xl">Categories</div>
+          <div className="p-9 mt-2 grid grid-cols-3 gap-x-6 gap-y-10">
+            <div className="max-w-sm rounded overflow-hidden shadow-lg text-center py-5">
+              <div className="px-6 py-4">
+                <div className="font-bold text-xl mb-2">Add a Category</div>
+                <AddCategory />
+              </div>
+            </div>
+            <div className="max-w-sm rounded overflow-hidden shadow-lg text-center py-5">
+              <div className="px-6 py-4">
+                <div className="font-bold text-xl mb-2">Delete a Category</div>
+                <DeleteCategory />
+              </div>
+            </div>
+            <div className="max-w-sm rounded overflow-hidden shadow-lg text-center py-5">
+              <div className="px-6 py-4">
+                <div className="font-bold text-xl mb-2">Change a Category</div>
+                <ChangeCategory />
+              </div>
+            </div>
+          </div>
 
-      <div className="w-full h-full text-center mt-12 font-bold text-xl">
-        Products
-      </div>
-      <div className="w-full h-full p-9 mt-2 grid grid-cols-3 gap-x-6 gap-y-10">
-        <AdminCard action="add" title="product" categories={categories} />
-        {products.length > 0 ? (
-          <>
-            <AdminCard action="delete" title="product" products={products} />
-            <AdminCard action="change" title="product" categories={categories} products={products} />
-          </>
-        ) : (
-          <></>
-        )}
-      </div>
+          <div className="text-center mt-12 font-bold text-xl">Products</div>
+          <div className="p-9 mt-2 grid grid-cols-3 gap-x-6 gap-y-10">
+            <div className="max-w-sm rounded overflow-hidden shadow-lg text-center py-5">
+              <div className="px-6 py-4">
+                <div className="font-bold text-xl mb-2">Add a Product</div>
+                <AddProduct />
+              </div>
+            </div>
+            <div className="max-w-sm rounded overflow-hidden shadow-lg text-center py-5">
+              <div className="px-6 py-4">
+                <div className="font-bold text-xl mb-2">Delete a Product</div>
+                <DeleteProduct />
+              </div>
+            </div>
+            <div className="max-w-sm rounded overflow-hidden shadow-lg text-center py-5">
+              <div className="px-6 py-4">
+                <div className="font-bold text-xl mb-2">Change a Product</div>
+                <ChangeProduct />
+              </div>
+            </div>
+          </div>
 
-      <div className="w-full h-full text-center mt-12 font-bold text-xl">
-        Users
-      </div>
-      <div className="w-full h-full p-9 mt-2 mb-10 grid grid-cols-3 gap-x-6 gap-y-10">
-        <AdminCard action="add" title="user" />
-        {users.length > 0 ? (
-          <>
-            <AdminCard action="delete" title="user" users={users} />
-            <AdminCard action="change" title="user" users={users} /> {/* products={products} */}
-          </>
-        ) : (
-          <></>
-        )}
-      </div>
-    </>
+          <div className="text-center mt-12 font-bold text-xl">Users</div>
+          <div className="p-9 mt-2 mb-10 grid grid-cols-3 gap-x-6 gap-y-10">
+            <div className="max-w-sm rounded overflow-hidden shadow-lg text-center py-5">
+              <div className="px-6 py-4">
+                <div className="font-bold text-xl mb-2">Add a User</div>
+                <AddUser />
+              </div>
+            </div>
+            <div className="max-w-sm rounded overflow-hidden shadow-lg text-center py-5">
+              <div className="px-6 py-4">
+                <div className="font-bold text-xl mb-2">Delete a User</div>
+                <DeleteUser />
+              </div>
+            </div>
+            <div className="max-w-sm rounded overflow-hidden shadow-lg text-center py-5">
+              <div className="px-6 py-4">
+                <div className="font-bold text-xl mb-2">Change a User</div>
+                <ChangeUser />
+              </div>
+            </div>
+          </div>
+        </UsersProvider>
+      </CategoriesProvider>
+    </ProductsProvider>
   );
 }

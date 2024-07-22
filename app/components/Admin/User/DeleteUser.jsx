@@ -2,13 +2,16 @@
 
 import { useState } from "react";
 import { deleteUser } from "@/app/lib/db";
+import { useUsers } from "@/app/context/UsersProvider";
 
-export default function DeleteUser({ users }) {
+export default function DeleteUser() {
   const [userSelected, setUserSelected] = useState("");
+  const { users, setUsers } = useUsers();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     await deleteUser(userSelected);
+    setUsers((prevUsers) => prevUsers.filter((user) => user !== userSelected));
     setUserSelected("");
   };
 
@@ -21,7 +24,7 @@ export default function DeleteUser({ users }) {
         onChange={(e) => setUserSelected(e.target.value)}
       >
         <option value="">{`Select a User`}</option>
-        {users.map((user) => (
+        {users && users.map((user) => (
           <option key={user} value={user}>
             {user}
           </option>

@@ -79,7 +79,7 @@ export default function Categories({ mobile }) {
     const uniqueProducts = Array.from(new Set(updatedProducts.map(p => p.id)))
       .map(id => updatedProducts.find(p => p.id === id));
 
-    setProducts(uniqueProducts);
+      setProducts(uniqueProducts);
   }
 
   return (
