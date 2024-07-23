@@ -10,6 +10,7 @@ import {
   getUserProductQuantity,
   deleteUserProduct,
 } from "../lib/db";
+// import {getProductById}
 import Image from "next/image";
 import Link from "next/link";
 import { useUserProducts } from "../context/UserProductsProvider";

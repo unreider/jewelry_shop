@@ -3,7 +3,6 @@
 import { useState } from "react";
 import ProductCard from "./Product/ProductCard";
 import Categories from "./Categories";
-// import { getProducts } from "../lib/db";
 import {
   Dialog,
   DialogBackdrop,
@@ -144,8 +143,6 @@ export default function Home() {
               {/* Product grid */}
               
               <div className="mt-5 lg:col-span-3 grid grid-cols-2 max-sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-5">
-                
-                  
                 {products.length > 0 ? (
                   products.map((product) => (
                     <ProductCard key={product} product={product} />

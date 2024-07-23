@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState, useEffect } from "react";
 import { signUp } from "../lib/actions";
 import Socials from "./Socials";
