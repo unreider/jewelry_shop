@@ -150,7 +150,8 @@ export default function ChangeProduct() {
         className="border border-black rounded p-2 mt-3"
         onChange={handleChange}
       />
-      <div className="flex items-center justify-center mt-3">
+
+      {/* <div className="flex items-center justify-center mt-3">
         <label className="cursor-pointer flex items-center justify-center w-32 h-16 bg-gray-100 rounded-lg border border-gray-300 hover:border-gray-500 focus:border-gray-500 focus:outline-none transition duration-300 ease-in-out">
           <input
             type="file"
@@ -160,21 +161,31 @@ export default function ChangeProduct() {
           />
           Upload Image
         </label>
+      </div> */}
+      <div className="flex items-center justify-center mt-3">
+        <input
+          type="file"
+          name="file"
+          accept="image/*"
+          onChange={handleProductImage}
+        />
       </div>
 
-      <input
-        type="text"
-        pattern="[mwx]{1}"
-        title="Please enter m/w/x"
-        min="0"
-        step="1"
-        name="gender"
-        value={formData.gender}
-        placeholder={`What gender is the Product for (m/w/x)`}
-        className="border border-black rounded p-2 mt-3"
-        onChange={handleChange}
-        required
-      />
+      <div className="mt-5 mb-2">
+        <label htmlFor="gender" className="mr-3">
+          Gender:
+        </label>
+        <select
+          name="gender"
+          id="gender"
+          value={formData.gender}
+          onChange={handleChange}
+        >
+          <option value="m">Men</option>
+          <option value="w">Women</option>
+          <option value="x">Men and Women</option>
+        </select>
+      </div>
 
       <select
         name="category"

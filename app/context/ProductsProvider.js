@@ -15,9 +15,7 @@ export const ProductsProvider = ({ children }) => {
 
   useEffect(() => {
     const fetchProducts = async () => {
-      console.log('before');
       const products = await getProducts();
-      console.log('after');
       setProducts(products);
       setProductNames(products.map((product) => product.name));
     };

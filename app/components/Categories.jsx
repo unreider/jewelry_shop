@@ -21,8 +21,8 @@ const filters = [
     id: "gender",
     name: "Gender",
     options: [
-      { value: "m", label: "Men", checked: false },
-      { value: "w", label: "Women", checked: false },
+      { value: "m", label: "Men", checked: true },
+      { value: "w", label: "Women", checked: true },
       { value: "x", label: "Men and Women", checked: true },
     ],
   },
@@ -49,38 +49,36 @@ export default function Categories({ mobile }) {
   }, []); // Run this effect only once when the component mounts
 
   const handleChange = async (e) => {
-    const value = e.target.value;
-    const checked = e.target.checked;
-    const name = e.target.name
-
-    if (name === 'category')
-      var categoryId = await getCategoryIdByName(value);
-
-    let updatedProducts;
+    const { name, value, checked } = e.target;
+  
+    console.log(`Change detected: ${name} - ${value} - ${checked}`);
+  
+    let filteredProducts = [];
+  
     if (checked) {
       // When a filter is checked, add the filtered products
-
-      if (name === 'category') {
-        var filteredProducts = await filterProductsByCategory(value);
+      if (name === "category") {
+        const categoryId = await getCategoryIdByName(value);
+        filteredProducts = await filterProductsByCategory(categoryId);
+      } else if (name === "gender") {
+        filteredProducts = await filterProductsByGender(value);
       }
-      else if (name === 'gender') {
-        var filteredProducts = await filterProductsByGender(value);
-      }
-      updatedProducts = [...products, ...filteredProducts];
+      // Update products to include new filtered products, avoiding duplicates
+      const updatedProducts = [...products, ...filteredProducts];
+      setProducts(Array.from(new Set(updatedProducts.map(p => p.id)))
+        .map(id => updatedProducts.find(p => p.id === id)));
     } else {
       // When a filter is unchecked, remove the products that match the unchecked filter
-      if (name === 'category')
+      let updatedProducts;
+      if (name === "category") {
+        const categoryId = await getCategoryIdByName(value);
         updatedProducts = products.filter(product => product.category_id !== categoryId);
-      else if (name === 'gender')
+      } else if (name === "gender") {
         updatedProducts = products.filter(product => product.gender !== value);
+      }
+      setProducts(updatedProducts);
     }
-
-    // Remove duplicates (if any)
-    const uniqueProducts = Array.from(new Set(updatedProducts.map(p => p.id)))
-      .map(id => updatedProducts.find(p => p.id === id));
-
-      setProducts(uniqueProducts);
-  }
+  };
 
   return (
     <>

@@ -22,8 +22,10 @@ export async function insertProduct(data) {
   const parsedInt = parseInt(data.price);
   const category_id = await getCategoryIdByName(data.category);
   try {
-    const product =
-      await sql`INSERT INTO products (name, description, price, image, category_id) VALUES (${data.name}, ${data.desc}, ${parsedInt}, ${data.image}, ${category_id})`;
+    const product = await sql`
+      INSERT INTO products (name, description, price, image, gender, category_id)
+      VALUES (${data.name}, ${data.desc}, ${parsedInt}, ${data.image}, ${data.gender}, ${category_id})
+    `;
     return product;
   } catch (error) {
     console.error("Error inserting product:", error);

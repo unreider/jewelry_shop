@@ -42,7 +42,10 @@ export default function AddProduct() {
       setProducts((prevProducts) => [...prevProducts, newProduct]);
 
       // Update the product names state with the new product
-      setProductNames((prevProductNames) => [...prevProductNames, formData.name])
+      setProductNames((prevProductNames) => [
+        ...prevProductNames,
+        formData.name,
+      ]);
 
       setFormData({
         name: "",
@@ -124,7 +127,7 @@ export default function AddProduct() {
         <input type="submit" value="Upload" /> */}
       </div>
 
-      <input
+      {/* <input
         type="text"
         pattern="[mwx]{1}"
         title="Please enter m/w/x"
@@ -136,7 +139,23 @@ export default function AddProduct() {
         className="border border-black rounded p-2 mt-3"
         onChange={handleChange}
         required
-      />
+      /> */}
+
+      <div className="mt-5 mb-2">
+        <label htmlFor="gender" className="mr-3">
+          Gender:
+        </label>
+        <select
+          name="gender"
+          id="gender"
+          value={formData.gender}
+          onChange={handleChange}
+        >
+          <option value="m">Men</option>
+          <option value="w">Women</option>
+          <option value="x">Men and Women</option>
+        </select>
+      </div>
 
       <select
         name="category"
