@@ -36,6 +36,7 @@ export const {
   changeUser,
   getUser,
   getUserIdByName,
+  checkParamExists
 } = userFunctions;
 
 export const {
@@ -48,7 +49,12 @@ export const {
   checkUserProductExists,
 } = userProductFunctions;
 
-import { sql, db } from "@vercel/postgres";
+import { db } from "@vercel/postgres";
+import { sql } from "@vercel/postgres";
+
+export async function createUuidOssp() {
+  await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
+}
 
 // Create DB with all tables
 export async function createdb() {

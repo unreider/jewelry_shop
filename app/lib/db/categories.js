@@ -9,7 +9,6 @@ export async function createCategories(client) {
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     name VARCHAR(100) NOT NULL
   )`;
-  console.log("\n\n\nRESULT ", result);
   return NextResponse.json({ result }, { status: 200 });
 }
 

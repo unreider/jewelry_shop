@@ -9,26 +9,30 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@headlessui/react": "^2.1.2",
-    "@heroicons/react": "^2.1.5",
-    "@tailwindcss/forms": "^0.5.7",
-    "@tremor/react": "^3.15.0",
-    "@vercel/postgres": "^0.9.0",
-    "bcryptjs": "^2.4.3",
-    "next": "^14.2.1",
-    "next-auth": "^4.24.7",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-query": "^3.39.3"
+    "@headlessui/react": "latest",
+    "@heroicons/react": "latest",
+    "@tailwindcss/forms": "latest",
+    "@vercel/postgres": "latest",
+    "bcryptjs": "latest",
+    "next": "latest",
+    "next-auth": "latest",
+    "npm-check-updates": "^16.14.20",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-query": "latest"
   },
   "devDependencies": {
-    "autoprefixer": "^10.4.18",
-    "html-webpack-plugin": "^5.6.0",
-    "postcss": "^8.4.35",
-    "tailwindcss": "^3.4.1",
-    "webpack": "^5.93.0",
-    "webpack-cli": "^5.1.4",
-    "webpack-dev-middleware": "^7.3.0",
-    "webpack-dev-server": "^5.0.4"
-  }
+    "autoprefixer": "latest",
+    "html-webpack-plugin": "latest",
+    "postcss": "latest",
+    "tailwindcss": "latest",
+    "webpack": "latest",
+    "webpack-cli": "latest",
+    "webpack-dev-middleware": "latest",
+    "webpack-dev-server": "latest"
+  },
+  "description": "This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).",
+  "main": "middleware.js",
+  "author": "",
+  "license": "ISC"
 }

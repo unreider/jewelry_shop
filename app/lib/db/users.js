@@ -1,5 +1,6 @@
 "use server";
 
+const bcrypt = require("bcryptjs");
 import { sql } from "@vercel/postgres";
 import { NextResponse } from "next/server";
 
@@ -9,15 +10,21 @@ export async function createUsers(client) {
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(255) NOT NULL,
-    password TEXT NOT NULL
+    password TEXT NOT NULL,
+    role VARCHAR(50) DEFAULT 'user' NOT NULL
   )`;
   return NextResponse.json({ result }, { status: 200 });
 }
 
 // User functions
 export async function insertUser(data) {
-  const user = await sql`INSERT INTO users (name, email, password)
-    VALUES (${data.name}, ${data.email}, ${data.password})`;
+  if (data.role) {
+    var user = await sql`INSERT INTO users (name, email, password, role)
+      VALUES (${data.name}, ${data.email}, ${data.password}, ${data.role})`;
+  } else {
+    var user = await sql`INSERT INTO users (name, email, password)
+      VALUES (${data.name}, ${data.email}, ${data.password})`;
+  }
   return user;
 }
 
@@ -34,7 +41,8 @@ export async function changeUser(data) {
       SET
         name = ${data.formData.name},
         email = ${data.formData.email},
-        password = ${data.formData.password}
+        password = ${data.formData.password},
+        role = ${data.formData.role}
       WHERE
         id = ${userId}
     `;
@@ -51,8 +59,14 @@ export async function getUsers() {
   return parsedUsers;
 }
 
-export async function getUser(email) {
-  const user = await sql`SELECT * FROM users WHERE email = ${email}`;
+export async function getUser({ name = "", email = "" }) {
+  console.log('name, email', name, email);
+  let user;
+  if (name) {
+    user = await sql`SELECT * FROM users WHERE name = ${name}`;
+  } else if (email) {
+    user = await sql`SELECT * FROM users WHERE email = ${email}`;
+  }
   return user;
 }
 
@@ -60,4 +74,12 @@ export async function getUserIdByName(name) {
   const user = await sql`SELECT id FROM users WHERE name = ${name}`;
   if (user.rows.length > 0) return user.rows[0].id;
   return null;
+}
+
+// check if name or email already exists in the database
+export async function checkParamExists(param, userText) {
+  const query = await sql`SELECT * FROM users WHERE ${param} = ${userText}`;
+  // console.log("query.rows", query.rows);
+  if (query.rows.length > 0) return true;
+  else return false;
 }

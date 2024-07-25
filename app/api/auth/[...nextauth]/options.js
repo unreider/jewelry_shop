@@ -28,7 +28,7 @@ export const options = {
 
         if (!email || !password) return null;
 
-        const user = await getUser(email);
+        const user = await getUser({ email: email });
 
         if (!user) return null;
 

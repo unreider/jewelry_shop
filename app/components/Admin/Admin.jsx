@@ -1,5 +1,10 @@
 "use client";
 
+import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
+import { getUser } from "@/app/lib/db";
+import { useRouter } from "next/navigation";
+
 import { CategoriesProvider } from "@/app/context/CategoriesProvider";
 import { ProductsProvider } from "@/app/context/ProductsProvider";
 import { UsersProvider } from "@/app/context/UsersProvider";
@@ -17,6 +22,36 @@ import DeleteUser from "./User/DeleteUser";
 import ChangeUser from "./User/ChangeUser";
 
 export default function Admin() {
+  const { data: session, status } = useSession();
+  const [userIsAdmin, setUserIsAdmin] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (session) {
+        const user = await getUser({ email: session.user.email });
+        if (user.rows[0].role === "admin") {
+          setUserIsAdmin(true);
+        } else {
+          router.push("/"); // Redirect if not admin
+        }
+      } else if (status === "unauthenticated") {
+        router.push("/"); // Redirect if not authenticated
+      }
+    };
+    fetchData();
+  }, [session, status, router]);
+
+  console.log("session", session);
+
+  if (status === "loading") {
+    return <div>Loading...</div>; // Display loading state if session is loading
+  }
+
+  if (!userIsAdmin) {
+    return null; // Return null to avoid rendering the rest of the component if the user is not an admin
+  }
+
   return (
     <ProductsProvider>
       <CategoriesProvider>
