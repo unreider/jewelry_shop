@@ -121,7 +121,7 @@ export default function Cart() {
                       <Image
                         width={30}
                         height={30}
-                        src={`/${product.image}`}
+                        src={product.image}
                         alt={product.name}
                         className="size-32 rounded object-cover"
                       />

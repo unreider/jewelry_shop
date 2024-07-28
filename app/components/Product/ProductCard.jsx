@@ -45,7 +45,7 @@ export default function ProductCard({ product }) {
     <div key={product.id} className="group relative px-7">
       <div className="w-full h-80 aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-md bg-gray-200 lg:aspect-none lg:h-80">
         <Image
-          src={`/${product.image}`}
+          src={product.image}
           width={80}
           height={80}
           className="h-full w-full object-cover object-center lg:h-full lg:w-full"

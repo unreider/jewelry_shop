@@ -9,10 +9,22 @@ const nextConfig = {
   //   config.externals = [...config.externals, "bcrypt"];
   //   return config;
   // },
-  
+
   // experimental: {
   //   serverActions: true
   // }
+
+  images: {
+    // domains: ["https://cdmsotn3nauemiwf.public.blob.vercel-storage.com/"],
+    remotePatterns: [
+      {
+          protocol: 'https',
+          hostname: 'cdmsotn3nauemiwf.public.blob.vercel-storage.com',
+          port: '',
+          // pathname: '/account123/**',
+      },
+  ],
+  },
 };
 
 export default nextConfig;

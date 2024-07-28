@@ -75,8 +75,8 @@ export async function filterProductsByGender(gender) {
   return products.rows;
 }
 
-export async function filterProductsByCategory(categoryName) {
-  const categoryId = await getCategoryIdByName(categoryName);
+export async function filterProductsByCategory(categoryId) {
+  // const categoryId = await getCategoryIdByName(categoryName);
   const products = await sql`SELECT * FROM products WHERE category_id = ${categoryId}`;
   return products.rows;
 }

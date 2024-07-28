@@ -60,6 +60,7 @@ export default function Categories({ mobile }) {
       if (name === "category") {
         const categoryId = await getCategoryIdByName(value);
         filteredProducts = await filterProductsByCategory(categoryId);
+        console.log('filteredProducts', filteredProducts);
       } else if (name === "gender") {
         filteredProducts = await filterProductsByGender(value);
       }

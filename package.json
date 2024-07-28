@@ -12,6 +12,7 @@
     "@headlessui/react": "latest",
     "@heroicons/react": "latest",
     "@tailwindcss/forms": "latest",
+    "@vercel/blob": "^0.23.4",
     "@vercel/postgres": "latest",
     "bcryptjs": "latest",
     "next": "latest",

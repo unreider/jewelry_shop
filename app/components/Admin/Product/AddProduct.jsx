@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { insertProduct } from "@/app/lib/db";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
@@ -60,26 +60,52 @@ export default function AddProduct() {
     }
   };
 
-  const handleProductImage = async (e) => {
-    const file = e.target.files[0];
-    const imageFileName = `${Date.now()}-${file.name.replace(/ /g, "-")}`;
-    const data = new FormData();
-    data.set("file", file);
-    data.set("imageFileName", imageFileName);
+  const inputFileRef = useRef(null);
+  const [blob, setBlob] = useState(null);
 
-    const response = await fetch("/api/uploadImage", {
+  const handleImageChange = async (event) => {
+    event.preventDefault();
+    const file = inputFileRef.current.files[0];
+
+    const response = await fetch(`/api/uploadImage?filename=${file.name}`, {
       method: "POST",
-      body: data,
+      body: file,
     });
-    if (!response.ok) throw new Error(await response.text());
-    const pageDirectory = path.resolve("uploads");
-    const pagePath = path.join(pageDirectory, imageFileName);
+
+    if (!response.ok) {
+      console.error('Failed to upload image:', await response.text());
+      return;
+    }
+
+    const newBlob = await response.json();
+    setBlob(newBlob);
 
     setFormData((prevData) => ({
       ...prevData,
-      image: pagePath,
+      image: newBlob.url,
     }));
   };
+
+  // const handleProductImage = async (e) => {
+  //   const file = e.target.files[0];
+  //   const imageFileName = `${Date.now()}-${file.name.replace(/ /g, "-")}`;
+  //   const data = new FormData();
+  //   data.set("file", file);
+  //   data.set("imageFileName", imageFileName);
+
+  //   const response = await fetch("/api/uploadImage", {
+  //     method: "POST",
+  //     body: data,
+  //   });
+  //   if (!response.ok) throw new Error(await response.text());
+  //   const pageDirectory = path.resolve("uploads");
+  //   const pagePath = path.join(pageDirectory, imageFileName);
+
+  //   setFormData((prevData) => ({
+  //     ...prevData,
+  //     image: pagePath,
+  //   }));
+  // };
 
   return (
     <form onSubmit={handleSubmit}>
@@ -110,36 +136,23 @@ export default function AddProduct() {
         className="border border-black rounded p-2 mt-3"
         onChange={handleChange}
       />
+
       <div className="flex items-center justify-center mt-3">
-        {/* <label className="cursor-pointer flex items-center justify-center w-32 h-16 bg-gray-100 rounded-lg border border-gray-300 hover:border-gray-500 focus:border-gray-500 focus:outline-none transition duration-300 ease-in-out"> */}
-        <input
+        {/* <input
           type="file"
           name="file"
-          accept="image/*"
+          // accept="image/*"
           onChange={handleProductImage}
           // className="hidden"
-        />
-        {/* Upload Image
-        </label> */}
+        /> */}
 
-        {/* <ServerUploadImage /> */}
-        {/* <input type="file" name="file" />
-        <input type="submit" value="Upload" /> */}
+        <input name="file" ref={inputFileRef} onChange={handleImageChange} type="file" required />
+        {/* {blob && (
+          <div>
+            Blob url: <a href={blob.url}>{blob.url}</a>
+          </div>
+        )} */}
       </div>
-
-      {/* <input
-        type="text"
-        pattern="[mwx]{1}"
-        title="Please enter m/w/x"
-        min="0"
-        step="1"
-        name="gender"
-        value={formData.gender}
-        placeholder={`What gender is the Product for (m/w/x)`}
-        className="border border-black rounded p-2 mt-3"
-        onChange={handleChange}
-        required
-      /> */}
 
       <div className="mt-5 mb-2">
         <label htmlFor="gender" className="mr-3">

@@ -40,7 +40,7 @@ export default function ProductId({ product }) {
             <div className="aspect-h-4 aspect-w-3 hidden overflow-hidden rounded-lg lg:block">
               <Image
                 alt={product.name}
-                src={`/${product.image}`}
+                src={product.image}
                 width={100}
                 height={100}
                 className="h-full w-full object-cover object-center"
@@ -50,7 +50,7 @@ export default function ProductId({ product }) {
               <div className="aspect-h-2 aspect-w-3 overflow-hidden rounded-lg">
                 <Image
                   alt={product.name}
-                  src={`/${product.image}`}
+                  src={product.image}
                   width={100}
                   height={100}
                   className="h-full w-full object-cover object-center"
@@ -59,7 +59,7 @@ export default function ProductId({ product }) {
               <div className="aspect-h-2 aspect-w-3 overflow-hidden rounded-lg">
                 <Image
                   alt={product.name}
-                  src={`/${product.image}`}
+                  src={product.image}
                   width={100}
                   height={100}
                   className="h-full w-full object-cover object-center"
@@ -69,7 +69,7 @@ export default function ProductId({ product }) {
             <div className="aspect-h-5 aspect-w-4 lg:aspect-h-4 lg:aspect-w-3 sm:overflow-hidden sm:rounded-lg">
               <Image
                 alt={product.name}
-                src={`/${product.image}`}
+                src={product.image}
                 width={100}
                 height={100}
                 className="h-full w-full object-cover object-center"
