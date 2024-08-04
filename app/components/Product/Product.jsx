@@ -66,6 +66,8 @@ export default function Product() {
   const [selectedColor, setSelectedColor] = useState(product.colors[0])
   const [selectedSize, setSelectedSize] = useState(product.sizes[2])
 
+  console.log('PRODUCT');
+
   return (
     <div className="bg-white">
       <div className="pt-6">

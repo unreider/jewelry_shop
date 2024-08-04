@@ -4,6 +4,7 @@ import { sql } from "@vercel/postgres";
 import { getCategoryIdByName } from './categories';
 import { NextResponse } from "next/server";
 
+// date, rating, popularity
 export async function createProducts(client) {
   const result = await client.sql`
   CREATE TABLE IF NOT EXISTS products (

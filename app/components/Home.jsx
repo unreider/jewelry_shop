@@ -21,11 +21,11 @@ import {
 import { useProducts } from "../context/ProductsProvider";
 
 const sortOptions = [
-  { name: "Most Popular", href: "#", current: true },
-  { name: "Best Rating", href: "#", current: false },
-  { name: "Newest", href: "#", current: false },
-  { name: "Price: Low to High", href: "#", current: false },
-  { name: "Price: High to Low", href: "#", current: false },
+  { name: "Most Popular", value: "most-popular", current: false },
+  { name: "Best Rating", value: "best-rating", current: false },
+  { name: "Newest", value: "newest", current: true },
+  { name: "Price: Low to High", value: "p-low-high", current: false },
+  { name: "Price: High to Low", value: "p-high-low", current: false },
 ];
 
 function classNames(...classes) {
@@ -34,8 +34,47 @@ function classNames(...classes) {
 
 export default function Home() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const { products } = useProducts(); // Use the context to get products
-  
+  const { products, setProducts } = useProducts(); // Use the context to get products
+
+  const handleSortClick = (e) => {
+    const sortValue = e.target.value;
+
+    let sortedProducts = [...products];
+
+    switch (sortValue) {
+      case "most-popular":
+        // Implement sorting logic for most popular
+        sortedProducts.sort((a, b) => b.popularity - a.popularity);
+        break;
+      case "best-rating":
+        // Implement sorting logic for best rating
+        sortedProducts.sort((a, b) => b.rating - a.rating);
+        break;
+      case "newest":
+        // Implement sorting logic for newest products
+        sortedProducts.sort((a, b) => new Date(b.date) - new Date(a.date));
+        break;
+      case "p-low-high":
+        // Implement sorting logic for price low to high
+        sortedProducts.sort((a, b) => a.price - b.price);
+        break;
+      case "p-high-low":
+        // Implement sorting logic for price high to low
+        sortedProducts.sort((a, b) => b.price - a.price);
+        break;
+      default:
+        console.log("No sorting option.");
+        break;
+    }
+
+    setProducts(sortedProducts);
+
+    // Update current sort option
+    sortOptions.forEach((option) => {
+      option.current = option.value === sortValue;
+    });
+  };
+
   return (
     <div className="bg-white">
       <div>
@@ -68,7 +107,6 @@ export default function Home() {
               </div>
 
               <Categories mobile={true} />
-
             </DialogPanel>
           </div>
         </Dialog>
@@ -97,18 +135,19 @@ export default function Home() {
                 >
                   <div className="py-1">
                     {sortOptions.map((option) => (
-                      <MenuItem key={option.name}>
-                        <a
-                          href={option.href}
+                      <MenuItem key={option.key}>
+                        <button
                           className={classNames(
                             option.current
                               ? "font-medium text-gray-900"
                               : "text-gray-500",
-                            "block px-4 py-2 text-sm data-[focus]:bg-gray-100"
+                            "block px-4 py-2 text-sm data-[focus]:bg-gray-100 w-full text-left"
                           )}
+                          value={option.value}
+                          onClick={handleSortClick}
                         >
                           {option.name}
-                        </a>
+                        </button>
                       </MenuItem>
                     ))}
                   </div>
@@ -134,14 +173,11 @@ export default function Home() {
           </div>
 
           <section aria-labelledby="products-heading" className="pb-24 pt-6">
-
-            
             <div className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-4 relative">
-                    
               <Categories mobile={false} />
 
               {/* Product grid */}
-              
+
               <div className="mt-5 lg:col-span-3 grid grid-cols-2 max-sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-5">
                 {products.length > 0 ? (
                   products.map((product) => (
