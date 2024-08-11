@@ -1,12 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import {
-  getCategories,
-  getProducts,
   filterProductsByGender,
-  filterProductsByCategory,
-  getCategoryIdByName
+  filterProductsByCategory
 } from "../lib/db";
 import {
   Disclosure,
@@ -15,6 +11,7 @@ import {
 } from "@headlessui/react";
 import { MinusIcon, PlusIcon } from "@heroicons/react/20/solid";
 import { useProducts } from "../context/ProductsProvider";
+import { useCategories } from "../context/CategoriesProvider";
 
 const filters = [
   {
@@ -29,53 +26,48 @@ const filters = [
 ];
 
 export default function Categories({ mobile }) {
-  const [categories, setCategories] = useState([]);
   const { products, setProducts } = useProducts(); // Use the context
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const fetchedProducts = await getProducts();
-        setProducts(fetchedProducts);
-
-        const fetchedCategories = await getCategories();
-        setCategories(fetchedCategories);
-      } catch (error) {
-        console.error("Error fetching Home data:", error);
-      }
-    }
-
-    fetchData();
-  }, []); // Run this effect only once when the component mounts
+  const { categories } = useCategories();
 
   const handleChange = async (e) => {
     const { name, value, checked } = e.target;
-  
+
     console.log(`Change detected: ${name} - ${value} - ${checked}`);
-  
+
     let filteredProducts = [];
-  
+
+    let categoryId;
+    categories.map((category) => {
+      if (category.name === value) categoryId = category.id;
+    });
+
     if (checked) {
       // When a filter is checked, add the filtered products
       if (name === "category") {
-        const categoryId = await getCategoryIdByName(value);
+        // const categoryId = await getCategoryIdByName(value);
         filteredProducts = await filterProductsByCategory(categoryId);
-        console.log('filteredProducts', filteredProducts);
       } else if (name === "gender") {
         filteredProducts = await filterProductsByGender(value);
       }
       // Update products to include new filtered products, avoiding duplicates
       const updatedProducts = [...products, ...filteredProducts];
-      setProducts(Array.from(new Set(updatedProducts.map(p => p.id)))
-        .map(id => updatedProducts.find(p => p.id === id)));
+      setProducts(
+        Array.from(new Set(updatedProducts.map((p) => p.id))).map((id) =>
+          updatedProducts.find((p) => p.id === id)
+        )
+      );
     } else {
       // When a filter is unchecked, remove the products that match the unchecked filter
       let updatedProducts;
       if (name === "category") {
-        const categoryId = await getCategoryIdByName(value);
-        updatedProducts = products.filter(product => product.category_id !== categoryId);
+        // const categoryId = await getCategoryIdByName(value);
+        updatedProducts = products.filter(
+          (product) => product.category_id !== categoryId
+        );
       } else if (name === "gender") {
-        updatedProducts = products.filter(product => product.gender !== value);
+        updatedProducts = products.filter(
+          (product) => product.gender !== value
+        );
       }
       setProducts(updatedProducts);
     }

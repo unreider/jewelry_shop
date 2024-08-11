@@ -3,65 +3,61 @@
 import { getSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import {
-  getProductById,
-  getUserIdByName,
-  getUserProducts,
+  // getProductById,
+  // getUserIdByName,
+  // getUserProducts,
   updateUserProductQuantity,
-  getUserProductQuantity,
+  // getUserProductQuantity,
   deleteUserProduct,
 } from "../lib/db";
 // import {getProductById}
 import Image from "next/image";
 import Link from "next/link";
 import { useUserProducts } from "../context/UserProductsProvider";
+import { useProducts } from "../context/ProductsProvider";
+import { useUsers } from "../context/UsersProvider";
 
 export default function Cart() {
   const [session, setSession] = useState(null);
-  const { userProducts, setUserProducts } = useUserProducts();
-  const [products, setProducts] = useState([]);
+  const [userId, setUserId] = useState(null);
   const [quantities, setQuantities] = useState({});
+  const { products } = useProducts();
+  const [cartProducts, setCartProducts] = useState([]);
+  const { userProducts, setUserProducts } = useUserProducts();
+  const { users } = useUsers();
 
   useEffect(() => {
-    const fetchSessionData = async () => {
+    const fetchData = async () => {
       const session = await getSession();
       if (session) {
         setSession(session);
-        const userId = await getUserIdByName(session.user.name);
-        const userProducts = await getUserProducts(userId);
-        setUserProducts(userProducts);
-      }
-    };
-    fetchSessionData();
-  }, []);
 
-  useEffect(() => {
-    const fetchProductData = async () => {
-      let pr = [];
-      for (let i = 0; i < userProducts.length; ++i) {
-        let product = await getProductById(userProducts[i].product_id);
-        pr.push(product);
-      }
-      setProducts(pr);
-    };
-    if (userProducts.length > 0) {
-      fetchProductData();
-    }
-  }, [userProducts]);
+        users.forEach((user) => {
+          if (user.name === session.user.name) setUserId(user.id);
+        });
 
-  useEffect(() => {
-    const fetchQuantities = async () => {
-      if (session) {
-        const userId = await getUserIdByName(session.user.name);
-        const newQuantities = {};
-        for (const product of userProducts) {
-          const quantity = await getUserProductQuantity(userId, product.product_id);
-          newQuantities[product.product_id] = quantity;
+        let newQuantities = {};
+        if (userProducts.length > 0) {
+          userProducts.forEach((userProduct) => {
+            newQuantities[userProduct.product_id] = userProduct.quantity;
+          });
+          setQuantities(newQuantities);
         }
-        setQuantities(newQuantities);
+
+        // Filter products based on userProducts
+        const userSpecificProducts = products.filter((product) =>
+          userProducts.some(
+            (userProduct) =>
+              userProduct.product_id === product.id &&
+              userProduct.user_id === userId
+          )
+        );
+        setCartProducts(userSpecificProducts);
       }
     };
-    fetchQuantities();
-  }, [session, userProducts]);
+
+    fetchData();
+  }, [userProducts, users, products, userId]); // Empty dependency array ensures this runs only once when the component mounts
 
   const calculateTotalAmount = () => {
     let res = 0;
@@ -79,7 +75,6 @@ export default function Cart() {
         [productId]: newQuantity >= 1 ? newQuantity : 0,
       }));
       if (newQuantity >= 1) {
-        const userId = await getUserIdByName(session.user.name);
         await updateUserProductQuantity(userId, productId, newQuantity);
       }
     } else {
@@ -91,39 +86,49 @@ export default function Cart() {
   };
 
   const handleRemove = async (productId) => {
-    const userId = await getUserIdByName(session.user.name);
+    // const userId = await getUserIdByName(session.user.name);
     await deleteUserProduct(userId, productId);
     setUserProducts((prevData) =>
       prevData.filter((product) => product.product_id !== productId)
     );
-    setProducts((prevProducts) =>
-      prevProducts.filter((product) => product.id !== productId)
+    setCartProducts((prevCartProducts) =>
+      prevCartProducts.filter((product) => product.product_id !== productId)
+    );
+    setCartProducts((prevCartProducts) =>
+      prevCartProducts.filter((product) => product.id !== productId)
     );
   };
 
   return (
     <section>
-      {session && userProducts.length > 0 && (
-        <div className="mx-auto max-w-screen-xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
-          <div className="mx-auto max-w-3xl">
-            <header className="text-center">
-              <h1 className="text-xl font-bold text-gray-900 sm:text-3xl">
-                {session.user.name}'s Cart
-              </h1>
-            </header>
+      {session &&
+        (userProducts.length > 0 ? (
+          <div className="mx-auto max-w-screen-xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+            <div className="mx-auto max-w-3xl">
+              <header className="text-center">
+                <h1 className="text-xl font-bold text-gray-900 sm:text-3xl">
+                  {session.user.name}'s Cart
+                </h1>
+              </header>
 
-            <div className="mt-8">
-              <ul className="space-y-5">
-                {userProducts &&
-                  products &&
-                  products.map((product) => (
-                    <li key={product.id} className="flex items-center gap-4 w-full">
+              <div className="mt-8">
+                <ul className="space-y-5">
+                  {cartProducts.map((product) => (
+                    <li
+                      key={product.id}
+                      className="flex items-center gap-4 w-full"
+                    >
                       <Image
                         width={30}
                         height={30}
                         src={product.image}
                         alt={product.name}
                         className="size-32 rounded object-cover"
+                        loading="lazy"
+                        quality={50}
+                        sizes="(max-width: 768px) 100vw, 
+                          (max-width: 1200px) 50vw, 
+                          33vw"
                       />
 
                       <div>
@@ -186,40 +191,53 @@ export default function Cart() {
                       </div>
                     </li>
                   ))}
-              </ul>
+                </ul>
 
-              <div className="mt-8 flex justify-end border-t border-gray-100 pt-8">
-                <div className="w-screen max-w-lg space-y-4">
-                  <dl className="space-y-0.5 text-sm text-gray-700">
-                    {products.map((p) => (
-                      <div key={p.id} className="flex justify-between">
-                        <dt>
-                          {p.name} | x{quantities[p.id]}
-                        </dt>
-                        <dd>{isNaN(p.price * quantities[p.id]) ? 0 : p.price * quantities[p.id]}֏</dd>
+                <div className="mt-8 flex justify-end border-t border-gray-100 pt-8">
+                  <div className="w-screen max-w-lg space-y-4">
+                    <dl className="space-y-0.5 text-sm text-gray-700">
+                      {cartProducts.map((p) => (
+                        <div key={p.id} className="flex justify-between">
+                          <dt>
+                            {p.name} | x{quantities[p.id]}
+                          </dt>
+                          <dd>
+                            {isNaN(p.price * quantities[p.id])
+                              ? 0
+                              : p.price * quantities[p.id]}
+                            ֏
+                          </dd>
+                        </div>
+                      ))}
+
+                      <div className="flex justify-between !text-base font-medium">
+                        <dt>Total</dt>
+                        <dd>{calculateTotalAmount()}֏</dd>
                       </div>
-                    ))}
+                    </dl>
 
-                    <div className="flex justify-between !text-base font-medium">
-                      <dt>Total</dt>
-                      <dd>{calculateTotalAmount()}֏</dd>
+                    <div className="flex justify-end">
+                      <a
+                        href="#"
+                        className="block rounded bg-gray-700 px-5 py-3 text-sm text-gray-100 transition hover:bg-gray-600"
+                      >
+                        Checkout
+                      </a>
                     </div>
-                  </dl>
-
-                  <div className="flex justify-end">
-                    <a
-                      href="#"
-                      className="block rounded bg-gray-700 px-5 py-3 text-sm text-gray-100 transition hover:bg-gray-600"
-                    >
-                      Checkout
-                    </a>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="mx-auto max-w-screen-xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+            <div className="mx-auto max-w-3xl text-center">
+              <h1 className="text-xl font-bold text-gray-900 sm:text-3xl">
+                There's nothing on your card yet!
+              </h1>
+            </div>
+          </div>
+        ))}
     </section>
   );
 }

@@ -7,7 +7,7 @@ import { useCategories } from "@/app/context/CategoriesProvider";
 export default function ChangeCategory() {
   const [category, setCategory] = useState("");
   const [categorySelected, setCategorySelected] = useState("");
-  const { categories, setCategories } = useCategories();
+  const { setCategories, categoryNames, setCategoryNames } = useCategories();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,10 +19,16 @@ export default function ChangeCategory() {
     }
 
     await changeCategory(categorySelected, category);
-  
-    // Update the local state immediately
+
     setCategories((prevCategories) =>
       prevCategories.map((cat) =>
+        cat.name === categorySelected ? category : cat.name
+      )
+    );
+  
+    // Update the local state immediately
+    setCategoryNames((prevCategoryNames) =>
+      prevCategoryNames.map((cat) =>
         cat === categorySelected ? category : cat
       )
     );
@@ -40,8 +46,8 @@ export default function ChangeCategory() {
         onChange={(e) => setCategorySelected(e.target.value)}
       >
         <option value="">{`Select a Category`}</option>
-        {categories &&
-          categories.map((cat) => (
+        {categoryNames &&
+          categoryNames.map((cat) => (
             <option key={cat} value={cat}>
               {cat}
             </option>

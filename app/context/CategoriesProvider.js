@@ -7,22 +7,19 @@ const CategoriesContext = createContext();
 
 export const CategoriesProvider = ({ children }) => {
   const [categories, setCategories] = useState([]);
+  const [categoryNames, setCategoryNames] = useState([]);
 
   useEffect(() => {
     const fetchCategories = async () => {
       const fetchedCategories = await getCategories();
-      setCategories(fetchedCategories.map((row) => row.name));
+      setCategories(fetchedCategories)
+      setCategoryNames(fetchedCategories.map((row) => row.name));
     };
     fetchCategories();
   }, []);
 
-  // const updateCategories = async () => {
-  //   const fetchedCategories = await getCategories();
-  //   setCategories(fetchedCategories.map((row) => row.name));
-  // };
-
   return (
-    <CategoriesContext.Provider value={{ categories, setCategories }}>
+    <CategoriesContext.Provider value={{ categories, setCategories, categoryNames, setCategoryNames }}>
       {children}
     </CategoriesContext.Provider>
   );

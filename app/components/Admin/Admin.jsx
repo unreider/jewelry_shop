@@ -42,8 +42,6 @@ export default function Admin() {
     fetchData();
   }, [session, status, router]);
 
-  console.log("session", session);
-
   if (status === "loading") {
     return <div>Loading...</div>; // Display loading state if session is loading
   }

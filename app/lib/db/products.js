@@ -4,7 +4,7 @@ import { sql } from "@vercel/postgres";
 import { getCategoryIdByName } from './categories';
 import { NextResponse } from "next/server";
 
-// date, rating, popularity
+// created_at, rating, popularity - newely added
 export async function createProducts(client) {
   const result = await client.sql`
   CREATE TABLE IF NOT EXISTS products (
@@ -14,6 +14,9 @@ export async function createProducts(client) {
     price INT NOT NULL,
     image VARCHAR(255),
     gender CHAR NOT NULL DEFAULT 'x',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    rating DECIMAL(2, 1) DEFAULT 0,
+    popularity INT DEFAULT 0,
     category_id UUID REFERENCES categories(id)
   )`;
   return NextResponse.json({ result }, { status: 200 });
@@ -26,7 +29,7 @@ export async function insertProduct(data) {
     const product = await sql`
       INSERT INTO products (name, description, price, image, gender, category_id)
       VALUES (${data.name}, ${data.desc}, ${parsedInt}, ${data.image}, ${data.gender}, ${category_id})
-    `;
+      RETURNING *`;  // Assuming you want to return the inserted product
     return product;
   } catch (error) {
     console.error("Error inserting product:", error);

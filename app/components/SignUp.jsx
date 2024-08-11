@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { signUp } from "../lib/actions";
 import Socials from "./Socials";
-import { checkParamExists } from "../lib/db";
+import { useUsers } from "../context/UsersProvider";
 
 export default function SignUp() {
   const [name, setName] = useState("");
@@ -12,6 +12,7 @@ export default function SignUp() {
   const [repassword, setRePassword] = useState("");
   const [errors, setErrors] = useState({});
   const [isFormValid, setIsFormValid] = useState(false);
+  const { users } = useUsers();
 
   useEffect(() => {
     validateForm(name, email, password, repassword);
@@ -48,7 +49,6 @@ export default function SignUp() {
 
     // !! Probably not gonna work because it will make
     // a query for every character typed
-    
 
     setErrors(errors);
     setIsFormValid(Object.keys(errors).length === 0);
@@ -59,8 +59,16 @@ export default function SignUp() {
 
     let errors = {};
 
-    const nameExists = checkParamExists("name", name);
-    const emailExists = checkParamExists("email", email);
+    let nameExists = false;
+    let emailExists = false;
+
+    users.forEach(user => {
+      if (user.name === name) nameExists = true;
+      if (user.email === email) emailExists = true;
+    });
+    
+    // const nameExists = checkParamExists("name", name);
+    // const emailExists = checkParamExists("email", email);
 
     let nameExistsResult, emailExistsResult;
 
@@ -71,12 +79,12 @@ export default function SignUp() {
       })
       .catch((error) => {
         console.error(error);
-      })
+      });
 
     if (nameExistsResult) errors.nameExists = "Name already exists!";
     if (emailExistsResult) errors.emailExists = "Email already exists!";
 
-    setErrors(prevErrors => ({...prevErrors, ...errors}));
+    setErrors((prevErrors) => ({ ...prevErrors, ...errors }));
 
     if (isFormValid) {
       console.log("Form submitted successfully!");
@@ -124,7 +132,9 @@ export default function SignUp() {
                 <p className="mt-1 text-sm text-gray-900">{errors.name}</p>
               )}
               {errors.nameExists && (
-                <p className="mt-1 text-sm text-gray-900">{errors.nameExists}</p>
+                <p className="mt-1 text-sm text-gray-900">
+                  {errors.nameExists}
+                </p>
               )}
             </div>
 
@@ -150,7 +160,9 @@ export default function SignUp() {
                 <p className="mt-1 text-sm text-gray-900">{errors.email}</p>
               )}
               {errors.emailExists && (
-                <p className="mt-1 text-sm text-gray-900">{errors.emailExists}</p>
+                <p className="mt-1 text-sm text-gray-900">
+                  {errors.emailExists}
+                </p>
               )}
             </div>
 
@@ -205,9 +217,7 @@ export default function SignUp() {
                 </p>
               )}
               {errors.match && (
-                <p className="mt-1 text-sm text-gray-900">
-                  {errors.match}
-                </p>
+                <p className="mt-1 text-sm text-gray-900">{errors.match}</p>
               )}
             </div>
 

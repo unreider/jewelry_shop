@@ -1,18 +1,24 @@
 "use client";
 
 import { useState } from "react";
+import { v4 as uuidv4 } from "uuid";
 import { insertCategory } from "@/app/lib/db";
 import { useCategories } from "@/app/context/CategoriesProvider";
 
 export default function AddCategory() {
   const [category, setCategory] = useState("");
-  const { setCategories } = useCategories();
+  const { setCategories, setCategoryNames } = useCategories();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await insertCategory(category);
+
+    // Generate a unique ID for the new category
+    const newCategory = { id: uuidv4(), name: category };
+
+    await insertCategory(newCategory);
     setCategory("");
-    setCategories((prevCategories) => [...prevCategories, category]);
+    setCategories((prevCategories) => [...prevCategories, newCategory]);
+    setCategoryNames((prevCategoryNames) => [...prevCategoryNames, newCategory.name])
   };
 
   return (

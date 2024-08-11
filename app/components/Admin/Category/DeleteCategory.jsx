@@ -6,14 +6,17 @@ import { useCategories } from "@/app/context/CategoriesProvider";
 
 export default function DeleteCategory() {
   const [categorySelected, setCategorySelected] = useState("");
-  const { categories, setCategories } = useCategories();
+  const { setCategories, categoryNames, setCategoryNames } = useCategories();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     await deleteCategory(categorySelected);
     setCategorySelected("");
     setCategories((prevCategories) =>
-      prevCategories.filter((category) => category !== categorySelected)
+      prevCategories.filter((category) => category.name !== categorySelected)
+    );
+    setCategoryNames((prevCategoryNames) =>
+      prevCategoryNames.filter((categoryName) => categoryName !== categorySelected)
     );
   };
 
@@ -26,8 +29,8 @@ export default function DeleteCategory() {
         onChange={(e) => setCategorySelected(e.target.value)}
       >
         <option value="">{`Select a Category`}</option>
-        {categories &&
-          categories.map((cat) => (
+        {categoryNames &&
+          categoryNames.map((cat) => (
             <option key={cat} value={cat}>
               {cat}
             </option>

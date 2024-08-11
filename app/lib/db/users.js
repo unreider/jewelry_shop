@@ -54,9 +54,9 @@ export async function changeUser(data) {
 }
 
 export async function getUsers() {
-  const users = await sql`SELECT name FROM users`;
-  const parsedUsers = users.rows.map((row) => row.name);
-  return parsedUsers;
+  const users = await sql`SELECT * FROM users`;
+  // const parsedUsers = users.rows.map((row) => row.name);
+  return users.rows;
 }
 
 export async function getUser({ name = "", email = "" }) {

@@ -19,7 +19,7 @@ export default function ChangeProduct() {
     category: "",
   });
   const { products, setProducts, setProductNames } = useProducts();
-  const { categories } = useCategories();
+  const { categoryNames } = useCategories();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -194,8 +194,8 @@ export default function ChangeProduct() {
         onChange={handleChange}
       >
         <option value="">Select the Product's Category</option>
-        {categories &&
-          categories.map((cat) => (
+        {categoryNames &&
+          categoryNames.map((cat) => (
             <option key={cat} value={cat}>
               {cat}
             </option>

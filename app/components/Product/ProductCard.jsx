@@ -42,56 +42,61 @@ export default function ProductCard({ product }) {
   };
 
   return (
-    <div key={product.id} className="group relative px-7">
-      <div className="w-full h-80 aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-md bg-gray-200 lg:aspect-none lg:h-80">
+    <div
+      key={product.id}
+      className="group relative border rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300"
+    >
+      <div className="w-full h-90 overflow-hidden bg-gray-200">
         <Image
           src={product.image}
-          width={80}
+          width={60}
           height={80}
-          className="h-full w-full object-cover object-center lg:h-full lg:w-full"
+          className="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
           alt={product.name}
+          loading="lazy"
+          quality={75}
+          sizes="(max-width: 768px) 100vw, 
+        (max-width: 1200px) 50vw, 
+        33vw"
+          placeholder="blur"
+          blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAACCAYAAAB/qH1jAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAJ0lEQVR4nGPY2fXjv458/H9Bbtf/IDbD/7v//8/Mvfq/J+nEfxAbAF3NFsFiuaE1AAAAAElFTkSuQmCC"
         />
       </div>
-      <div className="mt-4 flex justify-between">
-        <div>
-          <h2 className="font-medium text-gray-700">
-            <Link href={`product/${product.id}`}>
-              <span aria-hidden="true" className="absolute inset-0 h-fit" />
-              {product.name}
-            </Link>
-          </h2>
-          {/* <p className="mt-1 text-sm text-gray-500">{product.color}</p> */}
+      <div className="p-4">
+        <h2 className="font-semibold text-lg text-gray-800">
+          <Link href={`product/${product.id}`}>
+            <span aria-hidden="true" className="absolute inset-0 h-fit" />
+            {product.name}
+          </Link>
+        </h2>
+        <p className="mt-1 text-sm text-gray-500">{product.color}</p>
+        <p className="mt-2 text-lg text-gray-900">{product.price}֏</p>
+        <div className="mt-3">
+          {product.description.length <= 200 ? (
+            <p className="text-sm text-gray-700">{product.description}</p>
+          ) : (
+            <p className="text-sm text-gray-700">
+              {product.description.slice(0, 201)}...
+            </p>
+          )}
         </div>
-        <p className="text-sm font-medium text-gray-900">{product.price}֏</p>
-      </div>
-      <div className="mt-4 flex justify-between">
-        {product.description.length <= 200 ? (
-          <p className="text-sm text-gray-900">{product.description}</p>
-        ) : (
-          <p className="text-sm text-gray-900">
-            {product.description.slice(0, 201)}...
-          </p>
-        )}
-      </div>
-      {session && (
-        <>
-          <div>
+        {session && (
+          <div className="mt-4 flex space-x-4">
             <button
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4 mr-4"
+              className="flex-1 bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition-colors duration-200"
               onClick={handleClick}
             >
               Add to Cart
             </button>
-
             <button
-              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mt-4"
+              className="flex-1 bg-green-500 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded transition-colors duration-200"
               onClick={handleClick}
             >
               Buy
             </button>
           </div>
-        </>
-      )}
+        )}
+      </div>
     </div>
   );
 }

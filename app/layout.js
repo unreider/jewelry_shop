@@ -7,6 +7,10 @@ import Footer from "./components/Footer";
 import Header from "./components/Header";
 import { UserProductsProvider } from "./context/UserProductsProvider";
 
+import { createdb } from "./lib/db";
+import { CategoriesProvider } from "./context/CategoriesProvider";
+import { UsersProvider } from "./context/UsersProvider";
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
@@ -15,17 +19,24 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+  // create db tables
+  createdb();
+
   return (
     <html lang="en" className="h-full bg-white">
       <body className={`h-full flex flex-col ${inter.className}`}>
         <AuthProvider>
-          <ProductsProvider>
-            <UserProductsProvider>
-              <Header />
-              <main className="flex-grow">{children}</main>
-              <Footer />
-            </UserProductsProvider>
-          </ProductsProvider>
+          <CategoriesProvider>
+            <ProductsProvider>
+              <UsersProvider>
+                <UserProductsProvider>
+                  <Header />
+                  <main className="flex-grow">{children}</main>
+                  <Footer />
+                </UserProductsProvider>
+              </UsersProvider>
+            </ProductsProvider>
+          </CategoriesProvider>
         </AuthProvider>
       </body>
     </html>

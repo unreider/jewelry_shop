@@ -16,11 +16,6 @@ export const UsersProvider = ({ children }) => {
     fetchUsers();
   }, []);
 
-  // const updateUsers = async () => {
-  //   const fetchedUsers = await getUsers();
-  //   setUsers(fetchedUsers);
-  // };
-
   return (
     <UsersContext.Provider value={{ users, setUsers }}>
       {children}

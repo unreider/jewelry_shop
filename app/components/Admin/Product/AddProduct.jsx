@@ -2,7 +2,6 @@
 
 import { useState, useRef } from "react";
 import { insertProduct } from "@/app/lib/db";
-import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import { useCategories } from "@/app/context/CategoriesProvider";
 import { useProducts } from "@/app/context/ProductsProvider";
@@ -16,7 +15,7 @@ export default function AddProduct() {
     gender: "",
     category: "",
   });
-  const { categories } = useCategories();
+  const { categoryNames } = useCategories();
   const { setProducts, setProductNames } = useProducts();
 
   const handleChange = (e) => {
@@ -177,8 +176,8 @@ export default function AddProduct() {
         onChange={handleChange}
       >
         <option value="">Select a Category</option>
-        {categories &&
-          categories.map((cat) => (
+        {categoryNames &&
+          categoryNames.map((cat) => (
             <option key={cat} value={cat}>
               {cat}
             </option>

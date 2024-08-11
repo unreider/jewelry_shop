@@ -13,8 +13,8 @@ export async function createCategories(client) {
 }
 
 // Category functions
-export async function insertCategory(name) {
-  const category = await sql`INSERT INTO categories (name) VALUES (${name})`;
+export async function insertCategory(data) {
+  const category = await sql`INSERT INTO categories (name) VALUES (${data.name})`;
   return category;
 }
 
@@ -37,7 +37,7 @@ export async function changeCategory(oldName, newName) {
 }
 
 export async function getCategories() {
-  const categories = await sql`SELECT name FROM categories`;
+  const categories = await sql`SELECT * FROM categories`;
   return categories.rows;
 }
 
